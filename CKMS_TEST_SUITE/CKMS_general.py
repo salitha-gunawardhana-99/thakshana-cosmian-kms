@@ -2,6 +2,7 @@ import subprocess
 import time
 import logging
 from typing import Optional
+import re
 
 
 # Constants
@@ -10,6 +11,7 @@ KMS_CONTAINER_NAME = "kms"
 KMS_IMAGE = "ghcr.io/cosmian/kms:4.17.0"
 
 
+# Print hex mode
 def print_hex(label: str, data: bytes):
     hex_data = data.hex()
     logging.info(f'{label}: {hex_data}')
@@ -26,6 +28,13 @@ def run_command(command: str) -> Optional[str]:
         result = subprocess.check_output(
             command, shell=True, stderr=subprocess.STDOUT)
         return result.decode("utf-8").strip()
+    except subprocess.CalledProcessError:
+        return None
+    
+def run_command_(command: str) -> Optional[str]:
+    try:
+        result = subprocess.run(command, shell=True, capture_output=True, text=True, check=True)
+        return result.stdout.strip()
     except subprocess.CalledProcessError:
         return None
 
@@ -56,3 +65,36 @@ def start_kms_server():
             return
         time.sleep(1)
     logging.error("KMS server failed to start.")
+    
+
+def extract_unique_identifier(output):
+    # Define the regex pattern to find the unique identifier (UUID)
+    pattern = r"Unique identifier:\s([a-f0-9\-]+)"
+    
+    # Search for the pattern in the output
+    match = re.search(pattern, output)
+    
+    # If a match is found, return the unique identifier
+    if match:
+        return match.group(1)
+    
+    # If no match is found, return None or handle it accordingly
+    return None
+
+
+def extract_key_identifiers(output):
+    # Define regex patterns for public and private key unique identifiers
+    public_key_pattern = r"Public key unique identifier:\s([a-f0-9\-]+)"
+    private_key_pattern = r"Private key unique identifier:\s([a-f0-9\-]+)"
+    
+    # Search for public key unique identifier
+    public_key_match = re.search(public_key_pattern, output)
+    
+    # Search for private key unique identifier
+    private_key_match = re.search(private_key_pattern, output)
+    
+    # Extract public and private key identifiers if found, else None
+    public_key_id = public_key_match.group(1) if public_key_match else None
+    private_key_id = private_key_match.group(1) if private_key_match else None
+    
+    return [public_key_id, private_key_id]

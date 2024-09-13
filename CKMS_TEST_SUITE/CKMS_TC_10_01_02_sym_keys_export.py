@@ -25,7 +25,7 @@ class TestCkmsSymKeysExport(unittest.TestCase):
     def tearDown(self):
         CKMS_keys.revoke_key(revocation_reason="Testing",
                             tags=self.test_key_tags)
-        # CKMS_sym.destroy_key(tags=self.test_key_tags)  # Cleanup the test key
+        # CKMS_keys.destroy_key(tags=self.test_key_tags)  # Cleanup the test key
 
     def test_export_key_with_key_id(self):
         print("\nStarting test case: test_export_key_with_key_id")
@@ -72,8 +72,7 @@ class TestCkmsSymKeysExport(unittest.TestCase):
     def test_export_key_with_invalid_tags(self):
         print("\nStarting test case: test_export_key_with_invalid_tags")
 
-        CKMS_keys.revoke_key(revocation_reason="Testing",
-                            tags=self.test_key_tags)
+        CKMS_keys.revoke_key(revocation_reason="Testing", tags=self.test_key_tags)
 
         exported_key = CKMS_keys.export_key(tags=self.test_key_tags)
 
@@ -85,7 +84,7 @@ class TestCkmsSymKeysExport(unittest.TestCase):
 
     # def test_export_key_in_json_ttlv_format(self):
     #     print("Starting test case: test_export_key_in_json_ttlv_format")
-    #     output = CKMS_sym.run_command(
+    #     output = CKMS_general.run_command(
     #         f"ckms sym keys export -k {self.test_key_id} -f json-ttlv {self.exported_file}")
     #     self.assertIsNotNone(output, "The command failed and returned None.")
     #     self.assertTrue(os.path.exists(self.exported_file),
@@ -94,7 +93,7 @@ class TestCkmsSymKeysExport(unittest.TestCase):
 
     # def test_export_key_in_pkcs8_pem_format(self):
     #     print("Starting test case: test_export_key_in_pkcs8_pem_format")
-    #     output = CKMS_sym.run_command(
+    #     output = CKMS_general.run_command(
     #         f"ckms sym keys export -k {self.test_key_id} -f pkcs8-pem {self.exported_file}")
     #     self.assertIsNotNone(output, "The command failed and returned None.")
     #     self.assertTrue(os.path.exists(self.exported_file),
@@ -103,7 +102,7 @@ class TestCkmsSymKeysExport(unittest.TestCase):
 
     # def test_export_key_with_unwrap(self):
     #     print("Starting test case: test_export_key_with_unwrap")
-    #     output = CKMS_sym.run_command(
+    #     output = CKMS_general.run_command(
     #         f"ckms sym keys export -k {self.test_key_id} -u true {self.exported_file}")
     #     self.assertIsNotNone(output, "The command failed and returned None.")
     #     self.assertTrue(os.path.exists(self.exported_file),
@@ -113,7 +112,7 @@ class TestCkmsSymKeysExport(unittest.TestCase):
     # def test_export_key_with_wrap_key_id(self):
     #     print("Starting test case: test_export_key_with_wrap_key_id")
     #     wrap_key_id = "wrap-key-id"
-    #     output = CKMS_sym.run_command(
+    #     output = CKMS_general.run_command(
     #         f"ckms sym keys export -k {self.test_key_id} -w {wrap_key_id} {self.exported_file}")
     #     self.assertIsNotNone(output, "The command failed and returned None.")
     #     self.assertTrue(os.path.exists(self.exported_file),
@@ -123,8 +122,8 @@ class TestCkmsSymKeysExport(unittest.TestCase):
     # def test_export_revoked_key(self):
     #     print("Starting test case: test_export_revoked_key")
     #     # Assuming this method revokes the key
-    #     CKMS_sym.revoke_key(self.test_key_id)
-    #     output = CKMS_sym.run_command(
+    #     CKMS_general.revoke_key(self.test_key_id)
+    #     output = CKMS_general.run_command(
     #         f"ckms sym keys export -k {self.test_key_id} -i true {self.exported_file}")
     #     self.assertIsNone(
     #         output, "Expected the command to fail for a revoked key.")
@@ -132,8 +131,8 @@ class TestCkmsSymKeysExport(unittest.TestCase):
 
     # def test_export_destroyed_key(self):
     #     print("Starting test case: test_export_destroyed_key")
-    #     CKMS_sym.destroy_key(tags=[self.test_key_id])
-    #     output = CKMS_sym.run_command(
+    #     CKMS_general.destroy_key(tags=[self.test_key_id])
+    #     output = CKMS_general.run_command(
     #         f"ckms sym keys export -k {self.test_key_id} -i true {self.exported_file}")
     #     self.assertIsNone(
     #         output, "Expected the command to fail for a destroyed key.")

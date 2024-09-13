@@ -1,10 +1,86 @@
 import logging
 from typing import Optional, List
+import os
 import CKMS_general
 
 # Set up logging
 logging.basicConfig(level=logging.INFO,
                     format="%(asctime)s - %(levelname)s - %(message)s")
+
+
+def ensure_openssl_installed():
+    try:
+        CKMS_general.run_command("openssl version")
+        logging.info("OpenSSL is already installed.")
+    except Exception:
+        logging.info("OpenSSL not found. Installing...")
+        CKMS_general.run_command("sudo apt-get update")
+        CKMS_general.run_command("sudo apt-get install openssl -y")
+
+
+def generate_certificate_issuer(common_name="MyIssuer", private_key_filename = "issuer_private_key.pem", certificate_filename = "issuer_certificate.pem", pkcs12_filename="issuer.p12", pkcs12_password="password"):
+    ensure_openssl_installed()
+
+    # Check if the private key already exists
+    if not os.path.exists(private_key_filename):
+        # Generate private key
+        CKMS_general.run_command(f"openssl genpkey -algorithm RSA -out {private_key_filename} -pkeyopt rsa_keygen_bits:2048")
+        logging.info(f"Private key generated: {private_key_filename}")
+    else:
+        logging.info(f"Private key already exists: {private_key_filename}")
+
+    # Check if the certificate already exists
+    if not os.path.exists(certificate_filename):
+        # Generate self-signed certificate
+        CKMS_general.run_command(f"openssl req -new -x509 -key {private_key_filename} -out {certificate_filename} "
+                    f"-days 365 -subj \"/CN={common_name}\"")
+        logging.info(f"Self-signed certificate generated: {certificate_filename}")
+    else:
+        logging.info(f"Certificate already exists: {certificate_filename}")
+
+    # Check if the PKCS12 file already exists
+    if not os.path.exists(pkcs12_filename):
+        # Create PKCS12 file
+        CKMS_general.run_command(f"openssl pkcs12 -export -out {pkcs12_filename} -inkey {private_key_filename} "
+                    f"-in {certificate_filename} -password pass:{pkcs12_password}")
+        logging.info(f"PKCS12 file generated: {pkcs12_filename}")
+    else:
+        logging.info(f"PKCS12 file already exists: {pkcs12_filename}")
+
+
+def import_certificate_issuer_to_kms(pkcs12_filename="issuer.p12", pkcs12_password="password", tag="issuer_tag"):
+    # Check if the PKCS12 file exists
+    if not os.path.exists(pkcs12_filename):
+        logging.info(f"PKCS12 file {pkcs12_filename} not found. Please generate or provide the file.")
+        return [None, None]
+
+    try:
+        # Check if a certificate with the same tag already exists in the KMS
+        check_command = f"ckms certificates export -t {tag} -t _cert -f json-ttlv cert_exported.json"
+       
+        result = CKMS_general.run_command(check_command)
+        if result:
+            logging.info(f"A certificate with tag '{tag}' already exists in the KMS. Import aborted.")
+            # identifier = CKMS_general.extract_unique_identifier(result)
+            return ["pass", None]
+        
+        logging.info(f"No certificate with tag '{tag}' found in the KMS. Proceeding with import.")
+
+        # Import the PKCS12 file into the KMS
+        import_command = f"ckms certificates import {pkcs12_filename} --format pkcs12 --pkcs12-password {pkcs12_password} --tag {tag}"
+        result = CKMS_general.run_command(import_command)
+        if result:
+            logging.info(f"PKCS12 file {pkcs12_filename} imported successfully into the KMS with tag '{tag}'.")
+            identifier = CKMS_general.extract_unique_identifier(result)
+            return ["pass", identifier]
+        
+    except Exception as e:
+        logging.error(f"Failed to import the PKCS12 file into the KMS: {str(e)}")
+    finally:
+        # Clean up the temporary exported file if it was created
+        if os.path.exists("cert_exported.json"):
+            os.remove("cert_exported.json")
+
 
 def certify_certificate(
     certificate_id: Optional[str] = None,
@@ -13,70 +89,80 @@ def certify_certificate(
     public_key_id_to_certify: Optional[str] = None,
     certificate_id_to_recertify: Optional[str] = None,
     generate_key_pair: bool = False,
-    subject_name: Optional[str] = None,
+    subject_name: str = "C=SL, ST=Western, L=Colombo, O=Thakshana, CN=salitha.gunawardhana@thakshana.com",
     algorithm: str = None,
     issuer_private_key_id: Optional[str] = None,
     issuer_certificate_id: Optional[str] = None,
-    validity_days: Optional[int] = None,
+    validity_days: Optional[int] = 365,
     extensions_file: Optional[str] = None,
     tags: Optional[list] = None
 ) -> str:
+    
+    check_command = f"ckms certificates export -t {tags[0]} -t _cert -f json-ttlv cert_exported.json"
+       
+    result = CKMS_general.run_command(check_command)
+    if result:
+        logging.info(f"A certificate with tag '{tags[0]}' already exists in the KMS. Import aborted.")
+        return
     
     command = "ckms certificates certify"
 
     # Add certificate ID if provided
     if certificate_id:
-        command += f" --certificate-id {certificate_id}"
+        command += f" -c {certificate_id}"
 
     # Add CSR path and format if provided
     if csr_path:
-        command += f" --certificate-signing-request {csr_path} --certificate-signing-request-format {csr_format}"
-
+        command += f" -r {csr_path} -f {csr_format}"
+        
     # Add public key to certify or certificate to re-certify
     if public_key_id_to_certify:
-        command += f" --public-key-id-to-certify {public_key_id_to_certify}"
+        command += f" -p {public_key_id_to_certify}"
     elif certificate_id_to_recertify:
-        command += f" --certificate-id-to-re-certify {certificate_id_to_recertify}"
+        command += f" -n {certificate_id_to_recertify}"
 
     # Generate key pair if requested
     if generate_key_pair:
-        command += f" --generate-key-pair true"
-        if subject_name:
-            command += f" --subject-name '{subject_name}'"
-        command += f" --algorithm {algorithm}"
+        command += f" -g"
+        command += f" -a {algorithm}"
+    
+    if subject_name:
+        command += f" -s '{subject_name}'"
 
     # Specify issuer private key or certificate
     if issuer_private_key_id:
-        command += f" --issuer-private-key-id {issuer_private_key_id}"
-    elif issuer_certificate_id:
-        command += f" --issuer-certificate-id {issuer_certificate_id}"
+        command += f" -k {issuer_private_key_id}"
+    
+    if issuer_certificate_id:
+        command += f" -i {issuer_certificate_id}"
 
     # Set validity period if provided
     if validity_days:
-        command += f" --days {validity_days}"
+        command += f" -d {validity_days}"
 
     # Add certificate extensions file if provided
     if extensions_file:
-        command += f" --certificate-extensions {extensions_file}"
+        command += f" -e {extensions_file}"
 
     # Add tags if provided
     if tags:
         for tag in tags:
-            command += f" --tag {tag}"
+            command += f" -t {tag}"
 
     # Execute the CKMS command and check the result
     status = CKMS_general.run_command(command)
 
     if status:
-        logging.info(f"Certificate generation successful: {certificate_id or subject_name}")
-        return "pass"
+        logging.info("Certificate generation successful.")
+        identifire = CKMS_general.extract_unique_identifier(status)
+        return ["pass", identifire]
     else:
-        logging.error(f"Certificate generation failed: {certificate_id or subject_name}")
-        return "fail"
+        logging.error("Certificate generation failed.")
+        return ["fail", status]
     
 
 def export_certificate(
-    certificate_file: str,
+    certificate_file = "cert_exported.json",
     certificate_id: Optional[str] = None,
     tags: Optional[List[str]] = None,
     output_format: str = "json-ttlv",
@@ -85,7 +171,7 @@ def export_certificate(
 ) -> str:
 
     # Initialize base command
-    command = f"ckms certificates export {certificate_file}"
+    command = "ckms certificates export"
 
     # Add certificate ID if provided
     if certificate_id:
@@ -106,17 +192,21 @@ def export_certificate(
     # Allow revoked certificates if requested
     if allow_revoked:
         command += f" --allow-revoked true"
+        
+    command += f" {certificate_file}"
 
     # Execute the CKMS command and check the result
-    status = CKMS_general.run_command(command)
-
-    # Log the result and return status
-    if status:
-        logging.info(f"Certificate export successful: {certificate_file}")
-        return "pass"
-    else:
-        logging.error(f"Certificate export failed: {certificate_file}")
-        return "fail"
+    result = CKMS_general.run_command(command)
+    
+    if result:
+        # Read the exported certificate from the file if the command succeeds
+        with open(certificate_file, "rb") as f:
+            cert_data = f.read()
+        # os.remove(key_file)
+        return cert_data
+    
+    logging.error(f"Failed to export the certificate to '{certificate_file}'.")
+    return None
     
 
 def import_certificate(
@@ -191,7 +281,7 @@ def import_certificate(
             command += f" --key-usage {usage}"
 
     # Execute the CKMS command and check the result
-    status = CKMS_general.run_command(command)
+    status = CKMS_general.CKMS_general.run_command(command)
 
     # Log the result and return status
     if status:
@@ -317,7 +407,7 @@ def validate_certificate(
         command += f" --validity-time {validity_time}"
 
     # Execute the CKMS command and check the result
-    status = CKMS_general.run_command(command)
+    status = CKMS_general.CKMS_general.run_command(command)
 
     # Log the result and return status
     if status:

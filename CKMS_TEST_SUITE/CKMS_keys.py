@@ -71,11 +71,12 @@ def generate_rsa_key(
 
     # Log the result and return status
     if status:
-        logging.info(f"RSA key pair creation successful: {size_in_bits}-bit")
-        return [status, "pass"]
+        logging.info("RSA key pair creation successful.")
+        identifiers = CKMS_general.extract_key_identifiers(status)
+        return ["pass"] + identifiers
     else:
-        logging.error(f"RSA key pair creation failed: {size_in_bits}-bit")
-        return [status, "fail"]
+        logging.error("RSA key pair creation failed.")
+        return ["fail", status]
     
 
 # Function to export a key from the KMS using ckms
