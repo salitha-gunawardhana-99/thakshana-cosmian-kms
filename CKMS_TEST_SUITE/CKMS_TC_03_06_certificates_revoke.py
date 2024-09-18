@@ -1,58 +1,98 @@
 import unittest
+import logging
+import CKMS_general
+import CKMS_keys
 import CKMS_certificates
+
+# Set up logging
+logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 
 class TestCkmsCertificatesRevoke(unittest.TestCase):
     def setUp(self):
+        print("")
+        
+        logging.info("Setting up KMS server and generating RSA key pair.")
+        CKMS_general.start_kms_server()
+        
+        # Generate an RSA key pair for create self sign certificate
+        self.test_rsa_key_tags = ["test_rsa_key"]
+        test_rsa_key_id = CKMS_keys.generate_rsa_key(tags=self.test_rsa_key_tags)
+        self.test_public_key_id = test_rsa_key_id[1]
+        
+        self.test_cert_tags = ["test_certify_cert"]
+        
+        # Perform a self-signing operation
+        CKMS_certificates.certify_certificate(
+            public_key_id_to_certify=self.test_public_key_id,
+            tags=self.test_cert_tags
+        )
+        
         # Set up variables for testing
-        self.certificate_id = "test-cert-id"
-        self.tag = "test-cert-tag"
-        self.revocation_reason = "KeyCompromise"
+        self.certificate_id = CKMS_general.extract_cert_id(self.test_cert_tags[0])
+        
+        self.revocation_reason = "Testing"
+        
+        print("")
+        
+    def tearDown(self):
+        print("")
+        
+        # Remove test rsa key after every test scenario        
+        CKMS_keys.revoke_key(revocation_reason="Testing", tags=self.test_rsa_key_tags)
+        CKMS_keys.destroy_key(tags=self.test_rsa_key_tags)
+        
+        # Remove created test certificate after every test scenario
+        CKMS_certificates.revoke_certificate(revocation_reason="testing",tags=self.test_cert_tags)
+        CKMS_certificates.destroy_certificate(tags=self.test_cert_tags)
+            
+        print("")
+        print("=" * 120)
 
     def test_revoke_certificate_by_id(self):
-        print("\nStarting test case: test_revoke_certificate_by_id")
+        logging.info("Starting test case: test_revoke_certificate_by_id")
 
-        output = CKMS_certificates.revoke_certificate(
+        status = CKMS_certificates.revoke_certificate(
             certificate_id=self.certificate_id,
             revocation_reason=self.revocation_reason
         )
 
-        self.assertIn("success", output, "Failed to revoke certificate by ID.")
+        self.assertIn("pass", status, "Failed to revoke certificate by ID.")
 
-        print("Finishing test case: test_revoke_certificate_by_id\n")
+        logging.info("Starting test case: test_revoke_certificate_by_id")
 
     def test_revoke_certificate_by_tag(self):
-        print("\nStarting test case: test_revoke_certificate_by_tag")
+        logging.info("Starting test case: test_revoke_certificate_by_tag")
 
-        output = CKMS_certificates.revoke_certificate(
-            tag=self.tag,
-            revocation_reason=self.revocation_reason
+        status = CKMS_certificates.revoke_certificate(
+            revocation_reason=self.revocation_reason,
+            tags=self.test_cert_tags
         )
 
-        self.assertIn("success", output, "Failed to revoke certificate by tag.")
+        self.assertIn("pass", status, "Failed to revoke certificate by ID.")
 
-        print("Finishing test case: test_revoke_certificate_by_tag\n")
+        logging.info("Starting test case: test_revoke_certificate_by_tag")
 
     def test_revoke_certificate_without_reason(self):
-        print("\nStarting test case: test_revoke_certificate_without_reason")
+        logging.info("Starting test case: test_revoke_certificate_without_reason")
 
-        with self.assertRaises(ValueError):
-            CKMS_certificates.revoke_certificate(
-                certificate_id=self.certificate_id,
-                revocation_reason=""
-            )
+        status = CKMS_certificates.revoke_certificate(
+            certificate_id=self.certificate_id
+        )
 
-        print("Finishing test case: test_revoke_certificate_without_reason\n")
+        self.assertIn("fail", status, "Invalid revocation occured.")
+
+        logging.info("Starting test case: test_revoke_certificate_without_reason")
 
     def test_revoke_certificate_without_id_or_tag(self):
-        print("\nStarting test case: test_revoke_certificate_without_id_or_tag")
+        logging.info("Starting test case: test_revoke_certificate_without_id_or_tag")
 
-        output = CKMS_certificates.revoke_certificate(
+        status = CKMS_certificates.revoke_certificate(
             revocation_reason=self.revocation_reason
         )
 
-        self.assertIn("error", output, "Revocation should fail without certificate ID or tag.")
+        self.assertIn("fail", status, "Invalid revocation occured.")
 
-        print("Finishing test case: test_revoke_certificate_without_id_or_tag\n")
+        logging.info("Starting test case: test_revoke_certificate_without_id_or_tag")
 
 if __name__ == '__main__':
     unittest.main()

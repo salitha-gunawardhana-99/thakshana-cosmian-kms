@@ -3,7 +3,8 @@ import time
 import logging
 from typing import Optional
 import re
-
+import csv
+import os
 
 # Constants
 KMS_PORT = 9998
@@ -81,6 +82,11 @@ def extract_unique_identifier(output):
     # If no match is found, return None or handle it accordingly
     return None
 
+def extract_cert_id(tag):
+    output = run_command(f"ckms get-attributes -t {tag} -t _cert")
+    id = extract_unique_identifier(output)
+    return id
+    
 
 def extract_key_identifiers(output):
     # Define regex patterns for public and private key unique identifiers
@@ -98,3 +104,19 @@ def extract_key_identifiers(output):
     private_key_id = private_key_match.group(1) if private_key_match else None
     
     return [public_key_id, private_key_id]
+
+
+def append_to_csv(filename: str, data: list):
+    file_exists = os.path.isfile(filename)
+
+    # Open the CSV file in append mode
+    with open(filename, mode='a', newline='') as file:
+        writer = csv.writer(file)
+
+        # Write the data as a new row
+        writer.writerow(data)
+    
+    if file_exists:
+        print(f"Appended new data to {filename}: {data}")
+    else:
+        print(f"Created new CSV file {filename} and added the first row: {data}")

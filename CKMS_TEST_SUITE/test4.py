@@ -52,8 +52,24 @@ The certificate was successfully generated.
 
 # Example usage
 output_text5 = """
-The certificate ["test_cert_issuer","_cert"] of type Certificate was exported to "cert_exported.json"
-          Unique identifier: ["test_cert_issuer","_cert"]
-"""    
-unique_id = extract_unique_identifier(output_text5)
+Attributes for 58533976-c9a6-402a-8ba4-19c305d2134d
+	  Unique identifier: 58533976-c9a6-402a-8ba4-19c305d2134d
+{
+  "key-format-type": "X509",
+  "tags": [
+    "_cert",
+    "test_cert_issuer"
+  ],
+  "linked-private-key-id": "49c1b1d8-bf86-4daa-bd52-e86c917674fc"
+}
+"""   
+
+# Example usage
+output_text6 = """
+Attributes for 58533976-c9a6-402a-8ba4-19c305d2134d
+	  Unique identifier: 58533976-c9a6-402a-8ba4-19c305d2134d
+{}
+"""
+ 
+unique_id = extract_unique_identifier(output_text6)
 print(f"Extracted Unique Identifier: {unique_id}")

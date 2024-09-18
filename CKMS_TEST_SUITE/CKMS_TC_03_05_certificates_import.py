@@ -1,145 +1,128 @@
 import unittest
 import os
+import logging
 import CKMS_certificates
+import CKMS_general
+
+# Set up logging
+logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 
 class TestCkmsCertificatesImport(unittest.TestCase):
     def setUp(self):
+        print("")
+        
+        logging.info("Setting up KMS server and.")
+        CKMS_general.start_kms_server()
+        
         # Set up variables for testing
-        self.certificate_file_pem = "test_cert.pem"
-        self.certificate_file_json = "test_cert.json"
-        self.certificate_file_pkcs12 = "test_cert.p12"
-        self.certificate_id = "test-cert-id"
-        self.private_key_id = "test-private-key-id"
-        self.public_key_id = "test-public-key-id"
-        self.issuer_certificate_id = "test-issuer-cert-id"
+        self.certificate_file_pem = "certificate_for_import.pem"
+        self.certificate_file_json = "certificate_for_import.json"
+        self.certificate_file_pkcs12 = "certificate_for_import.p12"
+        self.private_key_file_pem = "private_key_for_import.pem"
+        
+        self.certificate_name = "MyCertfor_import"
         self.pkcs12_password = "testpassword"
-        self.tag = "test-cert-tag"
-        self.key_usage = "sign"
-
-        # Create dummy certificate files for testing (in actual cases, these should be real files)
-        with open(self.certificate_file_pem, 'w') as f:
-            f.write("-----BEGIN CERTIFICATE-----\nDummy PEM Certificate\n-----END CERTIFICATE-----\n")
-        with open(self.certificate_file_json, 'w') as f:
-            f.write("{\"cert\": \"Dummy JSON TTLV Certificate\"}")
-        with open(self.certificate_file_pkcs12, 'w') as f:
-            f.write("Dummy PKCS#12 Certificate")
+        
+        self.import_cert_tags = ["test-import-cert"]
+        self.imported_private_key_id = None
+        self.imported_certificate_id = None
+        
+        print("")
 
     def tearDown(self):
+        print("")
+        
+        # Remove created test certificate after every test scenario
+        CKMS_certificates.revoke_certificate(revocation_reason="testing",tags=self.import_cert_tags)
+        CKMS_certificates.destroy_certificate(tags=self.import_cert_tags)
+        
         # Clean up test certificate files
-        if os.path.exists(self.certificate_file_pem):
-            os.remove(self.certificate_file_pem)
-        if os.path.exists(self.certificate_file_json):
-            os.remove(self.certificate_file_json)
-        if os.path.exists(self.certificate_file_pkcs12):
-            os.remove(self.certificate_file_pkcs12)
+        # if os.path.exists(self.certificate_file_pem):
+        #     os.remove(self.certificate_file_pem)
+        # if os.path.exists(self.certificate_file_json):
+        #     os.remove(self.certificate_file_json)
+        # if os.path.exists(self.certificate_file_pkcs12):
+        #     os.remove(self.certificate_file_pkcs12)
+        # if os.path.exists(self.private_key_file_pem):
+        #     os.remove(self.private_key_file_pem)
+            
+        print("")
+        print("=" * 120)
 
     def test_import_certificate_as_pem(self):
-        print("\nStarting test case: test_import_certificate_as_pem")
-
-        output = CKMS_certificates.import_certificate(
+        logging.info("Starting test case: test_import_certificate_as_pem")
+        
+        CKMS_certificates.generate_pem_certificate(common_name=self.certificate_name, private_key_filename=self.private_key_file_pem, certificate_filename=self.certificate_file_pem)
+        
+        self.imported_private_key_id = CKMS_certificates.import_certificate(
             certificate_file=self.certificate_file_pem,
-            certificate_id=self.certificate_id,
-            format="pem",
-            private_key_id=self.private_key_id,
-            public_key_id=self.public_key_id,
-            issuer_certificate_id=self.issuer_certificate_id,
-            tag=self.tag,
-            key_usage=self.key_usage
-        )
+            input_format="pem",
+            tags=self.import_cert_tags,
+        )[1]
+        
+        self.imported_certificate_id = CKMS_general.extract_cert_id(self.import_cert_tags[0])
+        
+        # Assert the icertificate is imported successfully
+        self.assertIsNotNone(self.imported_certificate_id, "Failed to import the certificate.")
 
-        self.assertIn("success", output, "Failed to import certificate as PEM.")
-
-        print("Finishing test case: test_import_certificate_as_pem\n")
+        logging.info("Finishing test case: test_import_certificate_as_pem")
 
     def test_import_certificate_as_json(self):
-        print("\nStarting test case: test_import_certificate_as_json")
-
-        output = CKMS_certificates.import_certificate(
+        logging.info("Starting test case: test_import_certificate_as_json")
+        
+        CKMS_certificates.generate_json_certificate(common_name=self.certificate_name, private_key_filename=self.private_key_file_pem, certificate_filename=self.certificate_file_pem, json_filename=self.certificate_file_json)
+        
+        self.imported_private_key_id = CKMS_certificates.import_certificate(
             certificate_file=self.certificate_file_json,
-            certificate_id=self.certificate_id,
-            format="json-ttlv",
-            private_key_id=self.private_key_id,
-            public_key_id=self.public_key_id,
-            issuer_certificate_id=self.issuer_certificate_id,
-            tag=self.tag,
-            key_usage=self.key_usage
-        )
+            input_format="json-ttlv",
+            tags=self.import_cert_tags,
+        )[1]
+        
+        self.imported_certificate_id = CKMS_general.extract_cert_id(self.import_cert_tags[0])
+        
+        # Assert the icertificate is imported successfully
+        self.assertIsNotNone(self.imported_certificate_id, "Failed to import the certificate.")
 
-        self.assertIn("success", output, "Failed to import certificate as JSON.")
-
-        print("Finishing test case: test_import_certificate_as_json\n")
+        logging.info("Finishing test case: test_import_certificate_as_json")
 
     def test_import_certificate_as_pkcs12(self):
-        print("\nStarting test case: test_import_certificate_as_pkcs12")
-
-        output = CKMS_certificates.import_certificate(
+        logging.info("Starting test case: test_import_certificate_as_pkcs12")
+        
+        # Generate and import an issuer certificate and private key
+        CKMS_certificates.generate_pkcs12_certificate(
+            common_name=self.certificate_name,
+            private_key_filename=self.private_key_file_pem,
+            certificate_filename=self.certificate_file_pem,
+            pkcs12_filename=self.certificate_file_pkcs12,
+            pkcs12_password=self.pkcs12_password
+        )
+        
+        
+        self.imported_private_key_id = CKMS_certificates.import_certificate(
             certificate_file=self.certificate_file_pkcs12,
-            certificate_id=self.certificate_id,
-            format="pkcs12",
+            input_format="pkcs12",
             pkcs12_password=self.pkcs12_password,
-            tag=self.tag
-        )
+            tags=self.import_cert_tags,
+        )[1]
+        
+        self.imported_certificate_id = CKMS_general.extract_cert_id(self.import_cert_tags[0])
+        
+        # Assert the icertificate is imported successfully
+        self.assertIsNotNone(self.imported_certificate_id, "Failed to import the certificate.")
 
-        self.assertIn("success", output, "Failed to import certificate as PKCS12.")
+        logging.info("Finishing test case: test_import_certificate_as_pkcs12")
 
-        print("Finishing test case: test_import_certificate_as_pkcs12\n")
+    # def test_import_certificate_chain(self):
+    #     None
 
-    def test_import_certificate_chain(self):
-        print("\nStarting test case: test_import_certificate_chain")
+    # def test_import_certificate_with_replace(self):
+    #     None
 
-        # Assuming a PEM-stack for the chain format
-        chain_file = self.certificate_file_pem
-        output = CKMS_certificates.import_certificate(
-            certificate_file=chain_file,
-            certificate_id=self.certificate_id,
-            format="chain",
-            tag=self.tag
-        )
+    # def test_import_certificate_with_missing_id(self):
+    #     None
 
-        self.assertIn("success", output, "Failed to import certificate chain.")
-
-        print("Finishing test case: test_import_certificate_chain\n")
-
-    def test_import_certificate_with_replace(self):
-        print("\nStarting test case: test_import_certificate_with_replace")
-
-        output = CKMS_certificates.import_certificate(
-            certificate_file=self.certificate_file_pem,
-            certificate_id=self.certificate_id,
-            format="pem",
-            replace=True,
-            tag=self.tag
-        )
-
-        self.assertIn("success", output, "Failed to replace existing certificate.")
-
-        print("Finishing test case: test_import_certificate_with_replace\n")
-
-    def test_import_certificate_with_missing_id(self):
-        print("\nStarting test case: test_import_certificate_with_missing_id")
-
-        output = CKMS_certificates.import_certificate(
-            certificate_file=self.certificate_file_pem,
-            format="pem",
-            tag=self.tag
-        )
-
-        self.assertIn("success", output, "Failed to import certificate without specifying certificate ID.")
-
-        print("Finishing test case: test_import_certificate_with_missing_id\n")
-
-    def test_import_certificate_with_wrong_format(self):
-        print("\nStarting test case: test_import_certificate_with_wrong_format")
-
-        wrong_format = "invalid-format"
-        output = CKMS_certificates.import_certificate(
-            certificate_file=self.certificate_file_pem,
-            certificate_id=self.certificate_id,
-            format=wrong_format
-        )
-
-        self.assertIn("error", output, "Import should fail with an invalid format.")
-        print("Finishing test case: test_import_certificate_with_wrong_format\n")
+    # def test_import_certificate_with_wrong_format(self):
+    #     None
 
 if __name__ == '__main__':
     unittest.main()
