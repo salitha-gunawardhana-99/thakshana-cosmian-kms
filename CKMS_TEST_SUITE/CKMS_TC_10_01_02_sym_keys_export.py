@@ -1,34 +1,56 @@
 import unittest
-import re
+import logging
+import os
 import CKMS_general
 import CKMS_keys
 
+# Set up logging
+logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 
 class TestCkmsSymKeysExport(unittest.TestCase):
     def setUp(self):
-        CKMS_general.start_kms_server()  # Ensure the KMS server is running
-        self.test_key_tags = ["export-test-key-tag2"]
+        print("")
+        
+        logging.info("Setting up KMS server.")
+        self.test_key_tags = ["export-test-key"]
 
         # Assuming keys are generated beforehand or in the setup process
-        output = CKMS_keys.generate_key(key_tag=self.test_key_tags[0],
-                                       key_type="aes", key_length=256)
-
-        # Regular expression to match the UUID (unique identifier)
-        match = re.search(r"Unique identifier:\s+([a-f0-9\-]+)", output[0])
-        if match:
-            self.test_key_id = match.group(1)
-            print(f"Extracted Unique ID: {self.test_key_id}")
-        else:
-            self.test_key_id = None
-            print("Unique identifier not found.")
+        self.test_key_id = CKMS_keys.generate_key(tags=self.test_key_tags[0],
+                                       key_type="aes", key_length=256)[1]
+        
+        # Set up variables for testing
+        # self.export_file_pem = "exported_sym_key.pem"
+        # self.export_file_der = "exported_sym_key.der"
+        self.export_file_json = "exported_sym_key.json"
+        self.export_file_key = "exported_sym_key.key"
+        self.export_file_bin = "exported_sym_key.bin"
+        
+        print("")
 
     def tearDown(self):
+        print("")
+        
         CKMS_keys.revoke_key(revocation_reason="Testing",
                             tags=self.test_key_tags)
-        # CKMS_keys.destroy_key(tags=self.test_key_tags)  # Cleanup the test key
+        CKMS_keys.destroy_key(tags=self.test_key_tags)
+        
+        # Clean up exported files
+        # if os.path.exists(self.export_file_pem):
+        #     os.remove(self.export_file_pem)
+        # if os.path.exists(self.export_file_der):
+        #     os.remove(self.export_file_der)
+        if os.path.exists(self.export_file_json):
+            os.remove(self.export_file_json)
+        if os.path.exists(self.export_file_key):
+            os.remove(self.export_file_key)
+        if os.path.exists(self.export_file_bin):
+            os.remove(self.export_file_bin)
+        
+        print("")
+        print("=" * 120)
 
     def test_export_key_with_key_id(self):
-        print("\nStarting test case: test_export_key_with_key_id")
+        logging.info("Starting test case: test_export_key_with_key_id")
 
         exported_key = CKMS_keys.export_key(key_id=self.test_key_id)
 
@@ -36,13 +58,10 @@ class TestCkmsSymKeysExport(unittest.TestCase):
         self.assertIsNotNone(
             exported_key, "The command failed and returned None.")
 
-        # Print the exported key in hexadecimal format for verification
-        CKMS_general.print_hex("Exported_key: ", exported_key)
-
-        print("Finishing test case: test_export_key_with_key_id\n")
+        logging.info("Finishing test case: test_export_key_with_key_id")
 
     def test_export_key_with_invalid_key_id(self):
-        print("\nStarting test case: test_export_key_invalid_key_id")
+        logging.info("Starting test case: test_export_key_invalid_key_id")
 
         CKMS_keys.revoke_key(revocation_reason="Testing",
                             key_id=self.test_key_id)
@@ -53,10 +72,10 @@ class TestCkmsSymKeysExport(unittest.TestCase):
         self.assertIsNone(
             exported_key, "The command failed and returned a key.")
 
-        print("Finishing test case: test_export_key_invalid_key_id\n")
+        logging.info("Finishing test case: test_export_key_invalid_key_id")
 
     def test_export_key_with_tags(self):
-        print("\nStarting test case: test_export_key_with_tags")
+        logging.info("Starting test case: test_export_key_with_tags")
 
         exported_key = CKMS_keys.export_key(tags=self.test_key_tags)
 
@@ -64,13 +83,10 @@ class TestCkmsSymKeysExport(unittest.TestCase):
         self.assertIsNotNone(
             exported_key, "The command failed and returned None.")
 
-        # Print the exported key in hexadecimal format for verification
-        CKMS_general.print_hex("Exported_key: ", exported_key)
-
-        print("Finishing test case: test_export_key_with_tags\n")
+        logging.info("Finishing test case: test_export_key_with_tags")
 
     def test_export_key_with_invalid_tags(self):
-        print("\nStarting test case: test_export_key_with_invalid_tags")
+        logging.info("Starting test case: test_export_key_with_invalid_tags")
 
         CKMS_keys.revoke_key(revocation_reason="Testing", tags=self.test_key_tags)
 
@@ -80,64 +96,40 @@ class TestCkmsSymKeysExport(unittest.TestCase):
         self.assertIsNone(
             exported_key, "The command failed and returned a key.")
 
-        print("Finishing test case: test_export_key_with_invalid_tags\n")
+        logging.info("Finishing test case: test_export_key_with_invalid_tags")
 
-    # def test_export_key_in_json_ttlv_format(self):
-    #     print("Starting test case: test_export_key_in_json_ttlv_format")
-    #     output = CKMS_general.run_command(
-    #         f"ckms sym keys export -k {self.test_key_id} -f json-ttlv {self.exported_file}")
-    #     self.assertIsNotNone(output, "The command failed and returned None.")
-    #     self.assertTrue(os.path.exists(self.exported_file),
-    #                     "Exported key file does not exist.")
-    #     print("Finishing test case: test_export_key_in_json_ttlv_format")
+    def test_export_key_in_json_ttlv(self):
+        logging.info("Starting test case: test_export_key_in_json_ttlv")
 
-    # def test_export_key_in_pkcs8_pem_format(self):
-    #     print("Starting test case: test_export_key_in_pkcs8_pem_format")
-    #     output = CKMS_general.run_command(
-    #         f"ckms sym keys export -k {self.test_key_id} -f pkcs8-pem {self.exported_file}")
-    #     self.assertIsNotNone(output, "The command failed and returned None.")
-    #     self.assertTrue(os.path.exists(self.exported_file),
-    #                     "Exported key file does not exist.")
-    #     print("Finishing test case: test_export_key_in_pkcs8_pem_format")
+        exported_key = CKMS_keys.export_key(tags=self.test_key_tags, key_format="json-ttlv", key_file=self.export_file_json)
 
-    # def test_export_key_with_unwrap(self):
-    #     print("Starting test case: test_export_key_with_unwrap")
-    #     output = CKMS_general.run_command(
-    #         f"ckms sym keys export -k {self.test_key_id} -u true {self.exported_file}")
-    #     self.assertIsNotNone(output, "The command failed and returned None.")
-    #     self.assertTrue(os.path.exists(self.exported_file),
-    #                     "Exported key file does not exist.")
-    #     print("Finishing test case: test_export_key_with_unwrap")
+        # Verify that the exported key is not None
+        self.assertIsNotNone(
+            exported_key, "The command failed and returned None.")
 
-    # def test_export_key_with_wrap_key_id(self):
-    #     print("Starting test case: test_export_key_with_wrap_key_id")
-    #     wrap_key_id = "wrap-key-id"
-    #     output = CKMS_general.run_command(
-    #         f"ckms sym keys export -k {self.test_key_id} -w {wrap_key_id} {self.exported_file}")
-    #     self.assertIsNotNone(output, "The command failed and returned None.")
-    #     self.assertTrue(os.path.exists(self.exported_file),
-    #                     "Exported key file does not exist.")
-    #     print("Finishing test case: test_export_key_with_wrap_key_id")
+        logging.info("Finishing test case: test_export_key_in_json_ttlv")
 
-    # def test_export_revoked_key(self):
-    #     print("Starting test case: test_export_revoked_key")
-    #     # Assuming this method revokes the key
-    #     CKMS_general.revoke_key(self.test_key_id)
-    #     output = CKMS_general.run_command(
-    #         f"ckms sym keys export -k {self.test_key_id} -i true {self.exported_file}")
-    #     self.assertIsNone(
-    #         output, "Expected the command to fail for a revoked key.")
-    #     print("Finishing test case: test_export_revoked_key")
+    def test_export_key_in_raw_keyfile(self):
+        logging.info("Starting test case: test_export_key_in_raw_keyfile")
 
-    # def test_export_destroyed_key(self):
-    #     print("Starting test case: test_export_destroyed_key")
-    #     CKMS_general.destroy_key(tags=[self.test_key_id])
-    #     output = CKMS_general.run_command(
-    #         f"ckms sym keys export -k {self.test_key_id} -i true {self.exported_file}")
-    #     self.assertIsNone(
-    #         output, "Expected the command to fail for a destroyed key.")
-    #     print("Finishing test case: test_export_destroyed_key")
+        exported_key = CKMS_keys.export_key(tags=self.test_key_tags, key_format="raw", key_file=self.export_file_key)
 
+        # Verify that the exported key is not None
+        self.assertIsNotNone(
+            exported_key, "The command failed and returned None.")
+
+        logging.info("Finishing test case: test_export_key_in_raw_keyfile")
+        
+    def test_export_key_in_raw_binfile(self):
+        logging.info("Starting test case: test_export_key_in_raw_binfile")
+
+        exported_key = CKMS_keys.export_key(tags=self.test_key_tags, key_format="raw", key_file=self.export_file_bin)
+
+        # Verify that the exported key is not None
+        self.assertIsNotNone(
+            exported_key, "The command failed and returned None.")
+
+        logging.info("Finishing test case: test_export_key_in_raw_binfile")
 
 if __name__ == '__main__':
     unittest.main()

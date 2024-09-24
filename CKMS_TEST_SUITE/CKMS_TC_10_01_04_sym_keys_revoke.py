@@ -1,85 +1,81 @@
 import unittest
+import logging
 import CKMS_general
 import CKMS_keys
 
+# Set up logging
+logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 
 class TestCkmsSymKeysRevoke(unittest.TestCase):
-
     def setUp(self):
-        # Setup for common variables, key IDs, or any other required setup.
-        self.key_id = "test_key_id"
-        self.tag = "test-tag"
-        self.revocation_reason = "Key compromise"
+        print("")
+        
+        logging.info("Setting up KMS server and generating a symmetric key.")
+        CKMS_general.start_kms_server()
+        
+        # Generate an key for revoke test
+        self.test_key_tags = ["test_sym_key"]
+        self.test_key_id = CKMS_keys.generate_key(tags=self.test_key_tags[0])[1]
+        
+        self.revocation_reason = "Testing"
+        
+        print("")
+        
+    def tearDown(self):
+        print("")
+        
+        # Remove test key after every test scenario        
+        CKMS_keys.revoke_key(revocation_reason="Testing", tags=self.test_key_tags)
+        CKMS_keys.destroy_key(tags=self.test_key_tags)
+            
+        print("")
+        print("=" * 120)
 
-    def test_revoke_key_by_id(self):
-        print("Starting test case: test_revoke_key_by_id")
-        output = CKMS_keys.run_command(
-            f"ckms sym keys revoke -k {self.key_id} '{self.revocation_reason}'")
-        self.assertIsNotNone(output, "The command failed and returned None.")
-        print("Finishing test case: test_revoke_key_by_id")
+    def test_revoke_symkey_by_id(self):
+        logging.info("Starting test case: test_revoke_symkey_by_id")
 
-    def test_revoke_key_by_tag(self):
-        print("Starting test case: test_revoke_key_by_tag")
-        output = CKMS_keys.run_command(
-            f"ckms sym keys revoke -t {self.tag} '{self.revocation_reason}'")
-        self.assertIsNotNone(output, "The command failed and returned None.")
-        print("Finishing test case: test_revoke_key_by_tag")
+        status = CKMS_keys.revoke_key(
+            key_id=self.test_key_id,
+            revocation_reason=self.revocation_reason
+        )
 
-    def test_revoke_key_without_id_or_tag(self):
-        print("Starting test case: test_revoke_key_without_id_or_tag")
-        output = CKMS_keys.run_command(
-            f"ckms sym keys revoke '{self.revocation_reason}'")
-        self.assertIsNone(
-            output, "Expected the command to fail, but it succeeded.")
-        print("Finishing test case: test_revoke_key_without_id_or_tag")
+        self.assertIn("pass", status, "Failed to revoke key by ID.")
 
-    def test_revoke_key_with_invalid_id(self):
-        print("Starting test case: test_revoke_key_with_invalid_id")
-        output = CKMS_keys.run_command(
-            f"ckms sym keys revoke -k invalid_key_id '{self.revocation_reason}'")
-        self.assertIsNone(
-            output, "Expected the command to fail, but it succeeded.")
-        print("Finishing test case: test_revoke_key_with_invalid_id")
+        logging.info("Starting test case: test_revoke_symkey_by_id")
 
-    def test_revoke_key_with_invalid_tag(self):
-        print("Starting test case: test_revoke_key_with_invalid_tag")
-        output = CKMS_keys.run_command(
-            f"ckms sym keys revoke -t invalid_tag '{self.revocation_reason}'")
-        self.assertIsNone(
-            output, "Expected the command to fail, but it succeeded.")
-        print("Finishing test case: test_revoke_key_with_invalid_tag")
+    def test_revoke_symkey_by_tag(self):
+        logging.info("Starting test case: test_revoke_symkey_by_tag")
 
-    def test_revoke_key_with_empty_reason(self):
-        print("Starting test case: test_revoke_key_with_empty_reason")
-        output = CKMS_keys.run_command(
-            f"ckms sym keys revoke -k {self.key_id} ''")
-        self.assertIsNone(
-            output, "Expected the command to fail, but it succeeded.")
-        print("Finishing test case: test_revoke_key_with_empty_reason")
+        status = CKMS_keys.revoke_key(
+            tags=self.test_key_tags,
+            revocation_reason=self.revocation_reason
+        )
 
-    def test_revoke_key_with_special_characters_in_reason(self):
-        print("Starting test case: test_revoke_key_with_special_characters_in_reason")
-        special_reason = "Key compromised! Need to revoke ASAP."
-        output = CKMS_keys.run_command(
-            f"ckms sym keys revoke -k {self.key_id} '{special_reason}'")
-        self.assertIsNotNone(output, "The command failed and returned None.")
-        print("Finishing test case: test_revoke_key_with_special_characters_in_reason")
+        self.assertIn("pass", status, "Failed to revoke key by ID.")
 
-    def test_revoke_key_by_multiple_tags(self):
-        print("Starting test case: test_revoke_key_by_multiple_tags")
-        additional_tag = "backup-tag"
-        output = CKMS_keys.run_command(
-            f"ckms sym keys revoke -t {self.tag} -t {additional_tag} '{self.revocation_reason}'")
-        self.assertIsNotNone(output, "The command failed and returned None.")
-        print("Finishing test case: test_revoke_key_by_multiple_tags")
+        logging.info("Starting test case: test_revoke_symkey_by_tag")
 
-    def test_revoke_key_by_id_and_tag(self):
-        print("Starting test case: test_revoke_key_by_id_and_tag")
-        output = CKMS_keys.run_command(
-            f"ckms sym keys revoke -k {self.key_id} -t {self.tag} '{self.revocation_reason}'")
-        self.assertIsNotNone(output, "The command failed and returned None.")
-        print("Finishing test case: test_revoke_key_by_id_and_tag")
+    def test_revoke_symkey_without_reason(self):
+        logging.info("Starting test case: test_revoke_symkey_without_reason")
 
+        status = CKMS_keys.revoke_key(
+            key_id=self.test_key_id
+        )
+
+        self.assertIn("fail", status, "Invalid revocation occured.")
+
+        logging.info("Starting test case: test_revoke_symkey_without_reason")
+
+    def test_revoke_symkey_without_id_or_tag(self):
+        logging.info("Starting test case: test_revoke_symkey_without_id_or_tag")
+
+        status = CKMS_keys.revoke_key(
+            revocation_reason=self.revocation_reason
+        )
+
+        self.assertIn("fail", status, "Invalid revocation occured.")
+
+        logging.info("Starting test case: test_revoke_symkey_without_id_or_tag")
 
 if __name__ == '__main__':
     unittest.main()

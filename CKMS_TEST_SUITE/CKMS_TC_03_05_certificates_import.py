@@ -11,7 +11,7 @@ class TestCkmsCertificatesImport(unittest.TestCase):
     def setUp(self):
         print("")
         
-        logging.info("Setting up KMS server and.")
+        logging.info("Setting up KMS server.")
         CKMS_general.start_kms_server()
         
         # Set up variables for testing

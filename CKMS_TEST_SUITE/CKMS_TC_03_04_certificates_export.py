@@ -23,10 +23,10 @@ class TestCkmsCertificatesExport(unittest.TestCase):
         # Set up variables for testing
         self.export_file_pem = "exported_cert.pem"
         self.export_file_json = "exported_cert.json"
-        self.export_file_pkcs12 = "exported_cert.p12"
-        self.export_file_pkcs12_withpassword = "exported_cert_withpassword.p12"
+        self.export_file_pkcs12 = "exported_cert.p12" # pkcs12: .p12 or .pfx
         self.pkcs12_password = "testpassword"
         
+        # ????
         self.certificate_id = "test-cert-id"
         self.test_cert_tags = ["test_exported_cert"]
         
@@ -56,8 +56,6 @@ class TestCkmsCertificatesExport(unittest.TestCase):
             os.remove(self.export_file_json)
         if os.path.exists(self.export_file_pkcs12):
             os.remove(self.export_file_pkcs12)
-        if os.path.exists(self.export_file_pkcs12_withpassword):
-            os.remove(self.export_file_pkcs12_withpassword)
             
         print("")
         print("=" * 120)

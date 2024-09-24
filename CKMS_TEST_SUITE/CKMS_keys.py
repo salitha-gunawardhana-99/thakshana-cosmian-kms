@@ -9,36 +9,34 @@ logging.basicConfig(level=logging.INFO,
 
 # Function to generate a key using ckms
 def generate_key(
-    key_tag: str,
+    tags: str,
     key_type: str = "aes",
     key_length: Optional[int] = 256,
     key_bytes_base64: Optional[str] = None,
     temp_key_file: str = "temp_key_check.key",
 ) -> str:
     result = CKMS_general.run_command(
-        f"ckms sym keys export --tag {key_tag} --key-format raw {temp_key_file}")
+        f"ckms sym keys export --tag {tags} --key-format raw {temp_key_file}")
     if result:
         logging.info(
-            f"Key '{key_tag}' already exists. Skipping key generation.")
+            f"Key '{tags}' already exists. Skipping key generation.")
         os.remove(temp_key_file)
-        return [result, "pass"]
+        return ["pass", result]
 
     if key_bytes_base64:
-        command = f"ckms sym keys create --algorithm {key_type} --bytes-b64 {key_bytes_base64} --tag {key_tag}"
-    elif key_length:
-        command = f"ckms sym keys create --algorithm {key_type} --number-of-bits {key_length} --tag {key_tag}"
-    else:
-        logging.error(
-            "Key length or key bytes must be provided if not using an existing key.")
-        return [result, "fail"]
+        command = f"ckms sym keys create --algorithm {key_type} --bytes-b64 {key_bytes_base64} --tag {tags}"
+        
+    if key_length:
+        command = f"ckms sym keys create --algorithm {key_type} --number-of-bits {key_length} --tag {tags}"
 
     status = CKMS_general.run_command(command)
     if status:
-        logging.info(f"Key '{key_tag}' generated successfully.")
-        return [status, "pass"]
+        logging.info(f"Key '{tags}' generated successfully.")
+        identifire = CKMS_general.extract_unique_identifier(status)
+        return ["pass", identifire]
     else:
-        logging.error(f"Failed to generate key '{key_tag}'.")
-        return [status, "fail"]
+        logging.error(f"Failed to generate key '{tags}'.")
+        return ["fail", status]
     
 
 # Function to generate a rsa key using ckms
@@ -111,8 +109,6 @@ def export_key(
     # Append the key file at the end
     command += f" {key_file}"
 
-    logging.info(f"Exporting key to '{key_file}' with command: {command}")
-
     # Execute the command
     result = CKMS_general.run_command(command)
 
@@ -121,6 +117,7 @@ def export_key(
         with open(key_file, "rb") as f:
             key_data = f.read()
         # os.remove(key_file)
+        logging.info(f"Successfully export the key to '{key_file}'.")
         return key_data
 
     logging.error(f"Failed to export the key to '{key_file}'.")
@@ -141,6 +138,24 @@ def import_key(
     tags: Optional[List[str]] = None,
     key_usage: Optional[List[str]] = None,
 ) -> str:
+    
+    # Check if the key file exists
+    if not os.path.exists(key_file):
+        logging.info(f"key file {key_file} not found. Please generate or provide the file.")
+        return [None, None]
+    
+    # Check if a key with the same tag already exists in the KMS
+    check_command = f"ckms sym keys export -t {tags[0]} -t _kk -f json-ttlv key_exported.json"
+       
+    result = CKMS_general.run_command(check_command)
+    if result:
+        logging.info(f"A key with tag '{tags[0]}' already exists in the KMS. Import aborted.")
+        if os.path.exists("key_exported.json"):
+            os.remove("key_exported.json")
+        return ["pass", None]
+        
+    logging.info(f"No key with tag '{tags[0]}' found in the KMS. Proceeding with import.")
+    
     command = f"ckms {key_type} keys import -f {key_format}"
 
     if key_id:
@@ -166,20 +181,33 @@ def import_key(
     command += f" {key_file}"
 
     result = CKMS_general.run_command(command)
-    return "pass" if result else "fail"
+    
+    # Log the result and return status    
+    if result:
+            logging.info(f"Key file {key_file} imported successfully into the KMS with tag '{tags[0]}'.")
+            identifier = CKMS_general.extract_unique_identifier(result)
+            return ["pass", identifier]
+        
+    logging.error(f"Key import failed: {key_file}")
+        
+    return [None, None]
 
 
 # Function to revoke a key in the KMS using ckms
-def revoke_key(revocation_reason: str, key_type: str = "sym", key_id: Optional[str] = None, tags: Optional[List[str]] = None) -> bool:
+def revoke_key(revocation_reason: Optional[str] = None, key_type: Optional[str] = "sym", key_id: Optional[str] = None, tags: Optional[List[str]] = None) -> str:
     if not key_id and not tags:
         logging.error(
             "Either key_id or tags must be provided to revoke a key.")
-        return False
+        return "fail"
 
-    command = f"ckms {key_type} keys revoke '{revocation_reason}'"
+    command = f"ckms {key_type} keys revoke"
+    
+    if revocation_reason:
+        command += f" {revocation_reason}"
 
     if key_id:
         command += f" --key-id {key_id}"
+        
     if tags:
         for tag in tags:
             command += f" --tag {tag}"
@@ -187,18 +215,18 @@ def revoke_key(revocation_reason: str, key_type: str = "sym", key_id: Optional[s
     result = CKMS_general.run_command(command)
     if result:
         logging.info(f"Key revoked successfully. Reason: {revocation_reason}")
-        return True
+        return "pass"
     else:
         logging.error(f"Failed to revoke the key. Reason: {revocation_reason}")
-        return False
+        return "fail"
 
 
 # Function to destroy a key in the KMS using ckms
-def destroy_key(key_type: str = "sym", key_id: Optional[str] = None, tags: Optional[List[str]] = None) -> bool:
+def destroy_key(key_type: str = "sym", key_id: Optional[str] = None, tags: Optional[List[str]] = None) -> str:
     if not key_id and not tags:
         logging.error(
             "Either key_id or tags must be provided to destroy a key.")
-        return False
+        return "fail"
 
     command = f"ckms {key_type} keys destroy"
 
@@ -211,7 +239,7 @@ def destroy_key(key_type: str = "sym", key_id: Optional[str] = None, tags: Optio
     result = CKMS_general.run_command(command)
     if result:
         logging.info("Key destroyed successfully.")
-        return True
+        return "pass"
     else:
         logging.error("Failed to destroy the key.")
-        return False
+        return "fail"

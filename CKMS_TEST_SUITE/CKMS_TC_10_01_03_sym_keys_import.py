@@ -1,107 +1,91 @@
 import unittest
 import os
+import logging
 import CKMS_general
 import CKMS_keys
 
+# Set up logging
+logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 
 class TestCkmsSymKeysImport(unittest.TestCase):
 
     def setUp(self):
-        # Setup for common variables, paths, or any required keys.
-        self.test_key_file = "test_key_file.json"
-        self.imported_key_id = "imported_key_id"
-        self.public_key_id = "public_key_id"
-        self.private_key_id = "private_key_id"
-        self.certificate_id = "certificate_id"
-        self.tag = "test-tag"
-        # Create a test key file if necessary.
-        with open(self.test_key_file, 'w') as f:
-            f.write('{"key": "dummy_key_data"}')
+        print("")
+        
+        logging.info("Setting up KMS server.")
+        CKMS_general.start_kms_server()
+        
+        # Set up variables for testing
+        self.key_file_json = "sym_key_for_import.json"
+        self.key_file_key = "sym_key_for_import.key"
+        self.key_file_bin = "sym_key_for_import.bin"
+        
+        self.key_name = "MyKeyfor_import"
+        
+        self.import_key_tags = ["test-import-sym-key"]
+        self.imported_key_id = None
+        
+        print("")
 
     def tearDown(self):
-        # Cleanup the key file and any other artifacts after each test.
-        if os.path.exists(self.test_key_file):
-            os.remove(self.test_key_file)
+        print("")
+        
+        # Remove created test key after every test scenario
+        CKMS_keys.revoke_key(revocation_reason="testing",tags=self.import_key_tags)
+        CKMS_keys.destroy_key(tags=self.import_key_tags)
+        
+        # Clean up test key files
+        # if os.path.exists(self.key_file_json):
+        #     os.remove(self.key_file_json)
+        # if os.path.exists(self.key_file_key):
+        #     os.remove(self.key_file_key)
+        # if os.path.exists(self.key_file_bin):
+        #     os.remove(self.key_file_bin)
+        
+        print("")
+        print("=" * 120)
+        
+    def test_import_symkey_from_key_file(self):
+        logging.info("Starting test case: test_import_symkey_from_key_file")
+        
+        self.imported_key_id = CKMS_keys.import_key(
+            key_file = self.key_file_key,
+            key_format = "aes",
+            tags=self.import_key_tags,
+        )[1]
+        
+        # Assert the key is imported successfully
+        self.assertIsNotNone(self.imported_key_id, "Failed to import the key.")
 
-    def test_import_key_default_format(self):
-        print("Starting test case: test_import_key_default_format")
-        output = CKMS_keys.run_command(
-            f"ckms sym keys import {self.test_key_file} {self.imported_key_id}")
-        self.assertIsNotNone(output, "The command failed and returned None.")
-        print("Finishing test case: test_import_key_default_format")
+        logging.info("Finishing test case: test_import_symkey_from_key_file")
+        
+    def test_import_symkey_from_bin_file(self):
+        logging.info("Starting test case: test_import_symkey_from_bin_file")
+        
+        self.imported_key_id = CKMS_keys.import_key(
+            key_file = self.key_file_bin,
+            key_format = "aes",
+            tags=self.import_key_tags,
+        )[1]
+        
+        # Assert the key is imported successfully
+        self.assertIsNotNone(self.imported_key_id, "Failed to import the key.")
 
-    def test_import_key_with_format(self):
-        print("Starting test case: test_import_key_with_format")
-        output = CKMS_keys.run_command(
-            f"ckms sym keys import -f pem {self.test_key_file} {self.imported_key_id}")
-        self.assertIsNotNone(output, "The command failed and returned None.")
-        print("Finishing test case: test_import_key_with_format")
+        logging.info("Finishing test case: test_import_symkey_from_bin_file")
+        
+    def test_import_symkey_from_json_file(self):
+        logging.info("Starting test case: test_import_symkey_from_json_file")
+        
+        self.imported_key_id = CKMS_keys.import_key(
+            key_file = self.key_file_json,
+            key_format = "json-ttlv",
+            tags=self.import_key_tags,
+        )[1]
+        
+        # Assert the key is imported successfully
+        self.assertIsNotNone(self.imported_key_id, "Failed to import the key.")
 
-    def test_import_key_with_public_key_id(self):
-        print("Starting test case: test_import_key_with_public_key_id")
-        output = CKMS_keys.run_command(
-            f"ckms sym keys import -p {self.public_key_id} {self.test_key_file}")
-        self.assertIsNotNone(output, "The command failed and returned None.")
-        print("Finishing test case: test_import_key_with_public_key_id")
-
-    def test_import_key_with_private_key_id(self):
-        print("Starting test case: test_import_key_with_private_key_id")
-        output = CKMS_keys.run_command(
-            f"ckms sym keys import -k {self.private_key_id} {self.test_key_file}")
-        self.assertIsNotNone(output, "The command failed and returned None.")
-        print("Finishing test case: test_import_key_with_private_key_id")
-
-    def test_import_key_with_certificate_id(self):
-        print("Starting test case: test_import_key_with_certificate_id")
-        output = CKMS_keys.run_command(
-            f"ckms sym keys import -c {self.certificate_id} {self.test_key_file}")
-        self.assertIsNotNone(output, "The command failed and returned None.")
-        print("Finishing test case: test_import_key_with_certificate_id")
-
-    def test_import_key_with_unwrap(self):
-        print("Starting test case: test_import_key_with_unwrap")
-        output = CKMS_keys.run_command(
-            f"ckms sym keys import -u true {self.test_key_file}")
-        self.assertIsNotNone(output, "The command failed and returned None.")
-        print("Finishing test case: test_import_key_with_unwrap")
-
-    def test_import_key_with_replace_existing(self):
-        print("Starting test case: test_import_key_with_replace_existing")
-        output = CKMS_keys.run_command(
-            f"ckms sym keys import -r true {self.test_key_file} {self.imported_key_id}")
-        self.assertIsNotNone(output, "The command failed and returned None.")
-        print("Finishing test case: test_import_key_with_replace_existing")
-
-    def test_import_key_with_tag(self):
-        print("Starting test case: test_import_key_with_tag")
-        output = CKMS_keys.run_command(
-            f"ckms sym keys import -t {self.tag} {self.test_key_file} {self.imported_key_id}")
-        self.assertIsNotNone(output, "The command failed and returned None.")
-        print("Finishing test case: test_import_key_with_tag")
-
-    def test_import_key_invalid_key_file(self):
-        print("Starting test case: test_import_key_invalid_key_file")
-        output = CKMS_keys.run_command(
-            f"ckms sym keys import invalid_key_file.json")
-        self.assertIsNone(
-            output, "Expected the command to fail, but it succeeded.")
-        print("Finishing test case: test_import_key_invalid_key_file")
-
-    def test_import_key_invalid_key_format(self):
-        print("Starting test case: test_import_key_invalid_key_format")
-        output = CKMS_keys.run_command(
-            f"ckms sym keys import -f invalid-format {self.test_key_file}")
-        self.assertIsNone(
-            output, "Expected the command to fail, but it succeeded.")
-        print("Finishing test case: test_import_key_invalid_key_format")
-
-    def test_import_key_with_key_usage(self):
-        print("Starting test case: test_import_key_with_key_usage")
-        output = CKMS_keys.run_command(
-            f"ckms sym keys import --key-usage sign {self.test_key_file} {self.imported_key_id}")
-        self.assertIsNotNone(output, "The command failed and returned None.")
-        print("Finishing test case: test_import_key_with_key_usage")
-
+        logging.info("Finishing test case: test_import_symkey_from_json_file")
 
 if __name__ == '__main__':
     unittest.main()
