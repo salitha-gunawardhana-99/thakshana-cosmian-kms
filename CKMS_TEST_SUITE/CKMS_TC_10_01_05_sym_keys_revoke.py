@@ -1,3 +1,23 @@
+"""
+
+10.1.5 ckms sym keys revoke
+
+Revoke a symmetric key
+
+Usage
+
+ckms sym keys revoke [options] <REVOCATION_REASON>
+
+Arguments
+
+<REVOCATION_REASON> The reason for the revocation as a string
+
+--key-id [-k] <KEY_ID> The key unique identifier of the key to revoke. If not specified, tags should be specified
+
+--tag [-t] <TAG> Tag to use to retrieve the key when no key id is specified. To specify multiple tags, use the option multiple times
+
+"""
+
 import unittest
 import logging
 import CKMS_general

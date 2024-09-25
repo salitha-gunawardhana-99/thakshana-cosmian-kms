@@ -3,9 +3,11 @@ import logging
 from typing import Optional, List
 import CKMS_general
 
+
 # Set up logging
 logging.basicConfig(level=logging.INFO,
                     format="%(asctime)s - %(levelname)s - %(message)s")
+
 
 # Function to generate a key using ckms
 def generate_key(
@@ -14,7 +16,7 @@ def generate_key(
     key_length: Optional[int] = 256,
     key_bytes_base64: Optional[str] = None,
     temp_key_file: str = "temp_key_check.key",
-) -> str:
+) -> list:
     result = CKMS_general.run_command(
         f"ckms sym keys export --tag {tags} --key-format raw {temp_key_file}")
     if result:
@@ -38,13 +40,13 @@ def generate_key(
         logging.error(f"Failed to generate key '{tags}'.")
         return ["fail", status]
     
-
+    
 # Function to generate a rsa key using ckms
 def generate_rsa_key(
     size_in_bits: Optional[int] = None,
     tags: Optional[List[str]] = None,
     temp_key_file: str = "temp_key_check.key"
-) -> str:
+) -> list:
     result = CKMS_general.run_command(
         f"ckms rsa keys export --tag {tags[0]} --tag _sk --key-format raw {temp_key_file}")
     if result:
@@ -137,7 +139,7 @@ def import_key(
     replace_existing: str = None,
     tags: Optional[List[str]] = None,
     key_usage: Optional[List[str]] = None,
-) -> str:
+) -> list:
     
     # Check if the key file exists
     if not os.path.exists(key_file):

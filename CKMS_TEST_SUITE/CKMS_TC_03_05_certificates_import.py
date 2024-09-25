@@ -1,3 +1,48 @@
+"""
+
+3.5 ckms certificates import
+
+Import one of the following:
+
+    a certificate: formatted as a X509 PEM (pem), X509 DER (der) or JSON TTLV (json-ttlv)
+    a certificate chain as a PEM-stack (chain)
+    a PKCS12 file containing a certificate, a private key and possibly a chain (pkcs12)
+    the Mozilla Common CA Database (CCADB - fetched by the CLI before import) (ccadb)
+
+Usage
+
+ckms certificates import [options] [CERTIFICATE_FILE] [CERTIFICATE_ID]
+
+Arguments
+
+<CERTIFICATE_FILE> The input file in PEM, KMIP-JSON-TTLV or PKCS#12 format
+
+<CERTIFICATE_ID> The unique id of the leaf certificate; a unique id based on the key material is generated if not specified. When importing a PKCS12, the unique id will be that of the private key.
+
+--format [-f] <INPUT_FORMAT> Import the certificate in the selected format
+
+Possible values: "json-ttlv", "pem", "der", "chain", "ccadb", "pkcs12" [default: "json-ttlv"]
+
+--private-key-id [-k] <PRIVATE_KEY_ID> The corresponding private key id if any. Ignored for PKCS12 and CCADB formats
+
+--public-key-id [-q] <PUBLIC_KEY_ID> The corresponding public key id if any. Ignored for PKCS12 and CCADB formats
+
+--issuer-certificate-id [-i] <ISSUER_CERTIFICATE_ID> The issuer certificate id if any. Ignored for PKCS12 and CCADB formats
+
+--pkcs12-password [-p] <PKCS12_PASSWORD> PKCS12 password: only available for PKCS12 format
+
+--replace [-r] <REPLACE_EXISTING> Replace an existing certificate under the same id
+
+Possible values: "true", "false" [default: "false"]
+
+--tag [-t] <TAG> The tag to associate with the certificate. To specify multiple tags, use the option multiple times
+
+--key-usage <KEY_USAGE> For what operations should the certificate be used
+
+Possible values: "sign", "verify", "encrypt", "decrypt", "wrap-key", "unwrap-key", "mac-generate", "mac-verify", "derive-key", "key-agreement", "certificate-sign", "crl-sign", "authenticate", "unrestricted"
+
+"""
+
 import unittest
 import os
 import logging

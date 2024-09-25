@@ -1,3 +1,21 @@
+"""
+
+3.7 ckms certificates destroy
+
+Destroy a certificate
+
+Usage
+
+ckms certificates destroy [options]
+
+Arguments
+
+--certificate-id [-c] <CERTIFICATE_ID> The certificate unique identifier. If not specified, tags should be specified
+
+--tag [-t] <TAG> Tag to use to retrieve the certificate when no certificate id is specified. To specify multiple tags, use the option multiple times
+
+"""
+
 import unittest
 import os
 import logging

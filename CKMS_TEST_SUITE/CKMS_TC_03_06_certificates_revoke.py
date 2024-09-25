@@ -1,3 +1,23 @@
+"""
+
+3.6 ckms certificates revoke
+
+Revoke a certificate
+
+Usage
+
+ckms certificates revoke [options] <REVOCATION_REASON>
+
+Arguments
+
+<REVOCATION_REASON> The reason for the revocation as a string
+
+--certificate-id [-c] <CERTIFICATE_ID> The certificate unique identifier of the certificate to revoke. If not specified, tags should be specified
+
+--tag [-t] <TAG> Tag to use to retrieve the certificate when no certificate id is specified. To specify multiple tags, use the option multiple times
+
+"""
+
 import unittest
 import logging
 import CKMS_general

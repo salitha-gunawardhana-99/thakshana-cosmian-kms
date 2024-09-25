@@ -1,3 +1,21 @@
+"""
+
+10.1.6 ckms sym keys destroy
+
+Destroy a symmetric key
+
+Usage
+
+ckms sym keys destroy [options]
+
+Arguments
+
+--key-id [-k] <KEY_ID> The key unique identifier. If not specified, tags should be specified
+
+--tag [-t] <TAG> Tag to use to retrieve the key when no key id is specified. To specify multiple tags, use the option multiple times
+
+"""
+
 import unittest
 import logging
 import CKMS_general

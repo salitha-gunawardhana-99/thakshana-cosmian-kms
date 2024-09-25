@@ -1,3 +1,33 @@
+"""
+
+3.4 ckms certificates export
+
+Export a certificate from the KMS
+
+Usage
+
+ckms certificates export [options] <CERTIFICATE_FILE>
+
+Arguments
+
+<CERTIFICATE_FILE> The file to export the certificate to
+
+--certificate-id [-c] <UNIQUE_ID> The certificate unique identifier stored in the KMS; for PKCS#12, provide the private key id If not specified, tags should be specified
+
+--tag [-t] <TAG> Tag to use to retrieve the certificate/private key when no unique id is specified. To specify multiple tags, use the option multiple times.
+
+--format [-f] <OUTPUT_FORMAT> Export the certificate in the selected format
+
+Possible values: "json-ttlv", "pem", "pkcs12", "pkcs12-legacy" [default: "json-ttlv"]
+
+--pkcs12-password [-p] <PKCS12_PASSWORD> Password to use to protect the PKCS#12 file
+
+--allow-revoked [-r] <ALLOW_REVOKED> Allow exporting revoked and destroyed certificates or private key (for PKCS#12). The user must be the owner of the certificate. Destroyed objects have their key material removed.
+
+Possible values: "true", "false" [default: "false"]
+
+"""
+
 import unittest
 import os
 import logging

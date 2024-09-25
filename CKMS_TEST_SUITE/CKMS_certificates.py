@@ -5,6 +5,7 @@ import json
 import base64
 import CKMS_general
 
+
 # Set up logging
 logging.basicConfig(level=logging.INFO,
                     format="%(asctime)s - %(levelname)s - %(message)s")
@@ -18,6 +19,7 @@ def ensure_openssl_installed():
         logging.info("OpenSSL not found. Installing...")
         CKMS_general.run_command("sudo apt-get update")
         CKMS_general.run_command("sudo apt-get install openssl -y")
+
 
 def generate_json_certificate(common_name="MyCert", private_key_filename="private_key.pem", certificate_filename="certificate.pem", json_filename="certificate.json"):
     ensure_openssl_installed()
@@ -172,14 +174,14 @@ def certify_certificate(
     validity_days: Optional[int] = 365,
     extensions_file: Optional[str] = None,
     tags: Optional[list] = None
-) -> str:
+) -> list:
     
     check_command = f"ckms certificates export -t {tags[0]} -t _cert -f json-ttlv cert_exported.json"
        
     result = CKMS_general.run_command(check_command)
     if result:
         logging.info(f"A certificate with tag '{tags[0]}' already exists in the KMS. Import aborted.")
-        return
+        return ["pass", result]
     
     command = "ckms certificates certify"
 
@@ -197,7 +199,8 @@ def certify_certificate(
     # Add public key to certify or certificate to re-certify
     if public_key_id_to_certify:
         command += f" -p {public_key_id_to_certify}"
-    elif certificate_id_to_recertify:
+    
+    if certificate_id_to_recertify:
         command += f" -n {certificate_id_to_recertify}"
 
     # Generate key pair if requested
@@ -300,7 +303,7 @@ def import_certificate(
     replace_existing: bool = False,
     tags: Optional[List[str]] = None,
     key_usage: Optional[List[str]] = None
-) -> str:
+) -> list:
     
     # Check if the certificate file exists
     if not os.path.exists(certificate_file):

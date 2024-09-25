@@ -1,3 +1,49 @@
+"""
+
+3.1 ckms certificates certify
+
+Issue or renew a X509 certificate
+
+Usage
+
+ckms certificates certify [options]
+
+Arguments
+
+--certificate-id [-c] <CERTIFICATE_ID> The unique identifier of the certificate to issue or renew. If not provided, a random one will be generated when issuing a certificate, or the original one will be used when renewing a certificate
+
+--certificate-signing-request [-r] <CERTIFICATE_SIGNING_REQUEST> The path to a certificate signing request
+
+--certificate-signing-request-format [-f] <CERTIFICATE_SIGNING_REQUEST_FORMAT> The format of the certificate signing request
+
+Possible values: "pem", "der" [default: "pem"]
+
+--public-key-id-to-certify [-p] <PUBLIC_KEY_ID_TO_CERTIFY> The id of a public key to certify
+
+--certificate-id-to-re-certify [-n] <CERTIFICATE_ID_TO_RE_CERTIFY> The id of a certificate to re-certify
+
+--generate-key-pair [-g] <GENERATE_KEY_PAIR> Generate a keypair then sign the public key and generate a certificate
+
+Possible values: "true", "false"
+
+--subject-name [-s] <SUBJECT_NAME> When certifying a public key, or generating a keypair, the subject name to use.
+
+--algorithm [-a] <ALGORITHM> The algorithm to use for the keypair generation
+
+Possible values: "nist-p192", "nist-p224", "nist-p256", "nist-p384", "nist-p521", "x25519", "ed25519", "x448", "ed448", "rsa1024", "rsa2048", "rsa3072", "rsa4096" [default: "rsa4096"]
+
+--issuer-private-key-id [-k] <ISSUER_PRIVATE_KEY_ID> The unique identifier of the private key of the issuer. A certificate must be linked to that private key if no issuer certificate id is provided
+
+--issuer-certificate-id [-i] <ISSUER_CERTIFICATE_ID> The unique identifier of the certificate of the issuer. A private key must be linked to that certificate if no issuer private key id is provided
+
+--days [-d] <NUMBER_OF_DAYS> The requested number of validity days The server may grant a different value
+
+--certificate-extensions [-e] <CERTIFICATE_EXTENSIONS> The path to a X509 extension’s file, containing a v3_ca paragraph with the x509 extensions to use. For instance:
+
+--tag [-t] <TAG> The tag to associate to the certificate. To specify multiple tags, use the option multiple times
+
+"""
+
 import unittest
 import logging
 import CKMS_general

@@ -1,3 +1,45 @@
+"""
+
+10.1.4 ckms sym keys import
+
+Import a private or public key in the KMS.
+
+Usage
+
+ckms sym keys import [options] <KEY_FILE> [KEY_ID]
+
+Arguments
+
+<KEY_FILE> The KMIP JSON TTLV key file
+
+<KEY_ID> The unique id of the key; a unique id based on the key material is generated if not specified
+
+--key-format [-f] <KEY_FORMAT> The format of the key
+
+Possible values: "json-ttlv", "pem", "sec1", "pkcs1-priv", "pkcs1-pub", "pkcs8", "spki", "aes", "chacha20" [default: "json-ttlv"]
+
+--public-key-id [-p] <PUBLIC_KEY_ID> For a private key: the corresponding public key id if any
+
+--private-key-id [-k] <PRIVATE_KEY_ID> For a public key: the corresponding private key id if any
+
+--certificate-id [-c] <CERTIFICATE_ID> For a public or private key: the corresponding certificate id if any
+
+--unwrap [-u] <UNWRAP> In the case of a JSON TTLV key, unwrap the key if it is wrapped before storing it
+
+Possible values: "true", "false" [default: "false"]
+
+--replace [-r] <REPLACE_EXISTING> Replace an existing key under the same id
+
+Possible values: "true", "false" [default: "false"]
+
+--tag [-t] <TAG> The tag to associate with the key. To specify multiple tags, use the option multiple times
+
+--key-usage <KEY_USAGE> For what operations should the key be used
+
+Possible values: "sign", "verify", "encrypt", "decrypt", "wrap-key", "unwrap-key", "mac-generate", "mac-verify", "derive-key", "key-agreement", "certificate-sign", "crl-sign", "authenticate", "unrestricted"
+
+"""
+
 import unittest
 import os
 import logging

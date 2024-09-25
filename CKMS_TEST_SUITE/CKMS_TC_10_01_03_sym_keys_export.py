@@ -1,3 +1,47 @@
+"""
+
+10.1.3 ckms sym keys export
+
+Export a key from the KMS
+
+Usage
+
+ckms sym keys export [options] <KEY_FILE>
+
+Arguments
+
+<KEY_FILE> The file to export the key to
+
+--key-id [-k] <KEY_ID> The key unique identifier stored in the KMS. If not specified, tags should be specified
+
+--tag [-t] <TAG> Tag to use to retrieve the key when no key id is specified. To specify multiple tags, use the option multiple times
+
+--key-format [-f] <KEY_FORMAT> The format of the key
+
+    json-ttlv [default]. It should be the format to use to later re-import the key
+    sec1-pem and sec1-deronly apply to NIST EC private keys (Not Curve25519 or X448)
+    pkcs1-pem and pkcs1-der only apply to RSA private and public keys
+    pkcs8-pem and pkcs8-der only apply to RSA and EC private keys
+    spki-pem and spki-der only apply to RSA and EC public keys
+    raw returns the raw bytes of
+        symmetric keys
+        Covercrypt keys
+        wrapped keys
+
+Possible values: "json-ttlv", "sec1-pem", "sec1-der", "pkcs1-pem", "pkcs1-der", "pkcs8-pem", "pkcs8-der", "spki-pem", "spki-der", "base64", "raw" [default: "json-ttlv"]
+
+--unwrap [-u] <UNWRAP> Unwrap the key if it is wrapped before export
+
+Possible values: "true", "false" [default: "false"]
+
+--wrap-key-id [-w] <WRAP_KEY_ID> The id of the key/certificate to use to wrap this key before export
+
+--allow-revoked [-i] <ALLOW_REVOKED> Allow exporting revoked and destroyed keys. The user must be the owner of the key. Destroyed keys have their key material removed.
+
+Possible values: "true", "false" [default: "false"]
+
+"""
+
 import unittest
 import logging
 import os
