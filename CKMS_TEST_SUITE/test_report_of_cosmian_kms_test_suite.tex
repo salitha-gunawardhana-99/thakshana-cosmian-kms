@@ -1,0 +1,812 @@
+\documentclass[a4paper,12pt]{article}
+
+% Packages
+\usepackage{graphicx}
+\usepackage{amsmath}
+\usepackage{geometry}
+\usepackage{fancyhdr}
+\usepackage{setspace}
+\usepackage{titlesec}  % For title formatting
+\usepackage{tabularx}
+\usepackage[table,xcdraw]{xcolor}  % Load the xcolor package
+\geometry{margin=1in}
+\setstretch{1.5}
+
+% Define the grey color to avoid 'Undefined color' error
+\definecolor{grey}{rgb}{0.5, 0.5, 0.5}
+
+% Header and Footer
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{COSMIAN KMS TEST SUITE}
+\fancyhead[R]{\thepage}
+\setlength{\headheight}{14.49998pt}  % Fix the fancyhdr warning
+
+% Title Formatting
+\titleformat{\section}{\normalfont\Large\bfseries}{\thesection}{1em}{}
+
+% Cover Page
+\title{
+    \textbf{\Huge EXECUTION RESULTS OF COSMIAN KMS TEST SUITE} \\
+    \author{-Automatically Generated Report-}
+    \date{}
+    \vspace{1cm} % Adjust vertical space
+}
+
+\begin{document}
+
+% Title Page
+\maketitle
+\thispagestyle{empty}
+\newpage
+
+% Table of Contents
+% Start page numbering from the Table of Contents
+\setcounter{page}{1}  % Start counting from 1
+\tableofcontents
+\newpage
+
+\section{Introduction}
+The objective is to create a structured set of tests to ensure that the software functions as expected. The test suite will verify the functionalities and behavior of the system through well-defined test cases.
+
+\section{Test Suite Structure}
+
+\subsection{Tested Functionalities}
+The following functionalities are chosen for defining the test suite:
+\begin{enumerate}
+    \item Certificates Management
+    \item Symmetric Key Management
+    \item Elliptic Curve Key Management (Similar to Symmetric Key Management)
+    \item RSA Key Management (Similar to Symmetric Key Management)
+\end{enumerate}
+
+\subsection{Overview of Test Cases}
+\begin{enumerate}
+    \setlength{\itemsep}{0pt} % Adjusts space between items in the main enumerate list
+    \item Certificates Management
+    \begin{itemize}
+        \setlength{\itemsep}{0pt} % Adjusts space between items in the itemize list
+        \item Certify Certificates
+        \item Export Certificates
+        \item Import Certificates
+        \item Revoke Certificates
+        \item Destroy Certificates
+    \end{itemize}
+    
+    \item Symmetric Keys Management
+    \begin{itemize}
+        \setlength{\itemsep}{0pt} % Adjusts space between items in the itemize list
+        \item Create Symmetric Keys
+        \item Export Symmetric Keys
+        \item Import Symmetric Keys
+        \item Revoke Symmetric Keys
+        \item Destroy Symmetric Keys
+    \end{itemize}
+\end{enumerate}
+
+\newpage
+
+\section{Execution and Results}
+
+\subsection{Test Case: certify\_certificates}
+
+\begin{table}[h]
+    \centering
+    \begin{tabularx}{1\textwidth}{ 
+      | >{\raggedright\arraybackslash}X 
+      | >{\raggedright\arraybackslash}X | }
+        \hline
+        \rowcolor{grey!15}
+        \multicolumn{2}{|c|}{\textbf{Software Information}} \\  % Merged row with topic
+        \hline
+        SUT & COSMIAN KMS \\
+        \hline
+        Version & 4.19.1 \\
+        \hline
+        Testing Category & Certificates \\
+        \hline
+        Test Case ID & CKMS\_TC\_03\_01 \\
+        \hline
+        Test Case Name & certify\_certificates \\
+        \hline
+        Test Case Description & Certify certificates using different certifying methods. \\
+        \hline
+    \end{tabularx}
+\end{table}
+
+\begin{table}[h]
+    \centering
+    \begin{tabularx}{1\textwidth}{ 
+      | >{\raggedright\arraybackslash}X   
+      | p{2.5cm}                            
+      | p{2.5cm} |}                         
+        \hline
+        \textbf{Test Scenario} & \textbf{Expected (Pass/Fail)} & \textbf{Obtained (Pass/Fail)} \\  
+        \hline
+
+test\_self\_sign\_public\_key & Pass & Pass \\
+\hline
+
+test\_self\_sign\_invalid\_public\_key & Fail & Fail \\
+\hline
+
+test\_certify\_with\_issuer\_private\_key & Pass & Pass \\
+\hline
+
+test\_certify\_with\_issuer\_certificate & Pass & Pass \\
+\hline
+
+test\_certify\_with\_csr & Pass & Pass \\
+\hline
+
+test\_certify\_with\_invalid\_csr & Fail & Fail \\
+\hline
+
+test\_certify\_with\_gen\_keypair\_self\_sign & Pass & Pass \\
+\hline
+
+test\_certify\_with\_gen\_keypair\_from\_issuer\_private\_key & Pass & Pass \\
+\hline
+
+    \end{tabularx}
+\end{table}
+
+    \begin{table}[h]
+        \centering
+        \begin{tabularx}{1\textwidth}{ 
+          | >{\raggedright\arraybackslash}X 
+          | >{\raggedright\arraybackslash}X | }
+            \hline
+            Timestamp & 2024-10-27 21:09:37 \\
+            \hline
+            Tester & Unknown \\
+            \hline
+            \rowcolor{green!30} % Use specified color for the row
+            Status (Pass/Fail) & Pass \\
+            \hline
+        \end{tabularx}
+        \caption{Test Case Overall Results Summary}
+        \label{tab:test_case_info}
+    \end{table}
+
+    \newpage
+    
+\subsection{Test Case: export\_certificates}
+
+\begin{table}[h]
+    \centering
+    \begin{tabularx}{1\textwidth}{ 
+      | >{\raggedright\arraybackslash}X 
+      | >{\raggedright\arraybackslash}X | }
+        \hline
+        \rowcolor{grey!15}
+        \multicolumn{2}{|c|}{\textbf{Software Information}} \\  % Merged row with topic
+        \hline
+        SUT & COSMIAN KMS \\
+        \hline
+        Version & 4.19.1 \\
+        \hline
+        Testing Category & Certificates \\
+        \hline
+        Test Case ID & CKMS\_TC\_03\_04 \\
+        \hline
+        Test Case Name & export\_certificates \\
+        \hline
+        Test Case Description & Export certificates into different supported file formats. \\
+        \hline
+    \end{tabularx}
+\end{table}
+
+\begin{table}[h]
+    \centering
+    \begin{tabularx}{1\textwidth}{ 
+      | >{\raggedright\arraybackslash}X   
+      | p{2.5cm}                            
+      | p{2.5cm} |}                         
+        \hline
+        \textbf{Test Scenario} & \textbf{Expected (Pass/Fail)} & \textbf{Obtained (Pass/Fail)} \\  
+        \hline
+
+test\_export\_certificate\_as\_pem & Pass & Pass \\
+\hline
+
+test\_export\_certificate\_as\_json & Pass & Pass \\
+\hline
+
+test\_export\_certificate\_as\_pkcs12 & Pass & Pass \\
+\hline
+
+    \end{tabularx}
+\end{table}
+
+    \begin{table}[h]
+        \centering
+        \begin{tabularx}{1\textwidth}{ 
+          | >{\raggedright\arraybackslash}X 
+          | >{\raggedright\arraybackslash}X | }
+            \hline
+            Timestamp & 2024-10-27 21:09:43 \\
+            \hline
+            Tester & Unknown \\
+            \hline
+            \rowcolor{green!30} % Use specified color for the row
+            Status (Pass/Fail) & Pass \\
+            \hline
+        \end{tabularx}
+        \caption{Test Case Overall Results Summary}
+        \label{tab:test_case_info}
+    \end{table}
+
+    \newpage
+    
+\subsection{Test Case: import\_certificates}
+
+\begin{table}[h]
+    \centering
+    \begin{tabularx}{1\textwidth}{ 
+      | >{\raggedright\arraybackslash}X 
+      | >{\raggedright\arraybackslash}X | }
+        \hline
+        \rowcolor{grey!15}
+        \multicolumn{2}{|c|}{\textbf{Software Information}} \\  % Merged row with topic
+        \hline
+        SUT & COSMIAN KMS \\
+        \hline
+        Version & 4.19.1 \\
+        \hline
+        Testing Category & Certificates \\
+        \hline
+        Test Case ID & CKMS\_TC\_03\_05 \\
+        \hline
+        Test Case Name & import\_certificates \\
+        \hline
+        Test Case Description & Import certificates from different supported file formats. \\
+        \hline
+    \end{tabularx}
+\end{table}
+
+\begin{table}[h]
+    \centering
+    \begin{tabularx}{1\textwidth}{ 
+      | >{\raggedright\arraybackslash}X   
+      | p{2.5cm}                            
+      | p{2.5cm} |}                         
+        \hline
+        \textbf{Test Scenario} & \textbf{Expected (Pass/Fail)} & \textbf{Obtained (Pass/Fail)} \\  
+        \hline
+
+test\_import\_certificate\_as\_pem & Pass & Pass \\
+\hline
+
+test\_import\_certificate\_as\_json & Pass & Pass \\
+\hline
+
+test\_import\_certificate\_as\_pkcs12 & Pass & Pass \\
+\hline
+
+    \end{tabularx}
+\end{table}
+
+    \begin{table}[h]
+        \centering
+        \begin{tabularx}{1\textwidth}{ 
+          | >{\raggedright\arraybackslash}X 
+          | >{\raggedright\arraybackslash}X | }
+            \hline
+            Timestamp & 2024-10-27 21:09:47 \\
+            \hline
+            Tester & Unknown \\
+            \hline
+            \rowcolor{green!30} % Use specified color for the row
+            Status (Pass/Fail) & Pass \\
+            \hline
+        \end{tabularx}
+        \caption{Test Case Overall Results Summary}
+        \label{tab:test_case_info}
+    \end{table}
+
+    \newpage
+    
+\subsection{Test Case: revoke\_certificates}
+
+\begin{table}[h]
+    \centering
+    \begin{tabularx}{1\textwidth}{ 
+      | >{\raggedright\arraybackslash}X 
+      | >{\raggedright\arraybackslash}X | }
+        \hline
+        \rowcolor{grey!15}
+        \multicolumn{2}{|c|}{\textbf{Software Information}} \\  % Merged row with topic
+        \hline
+        SUT & COSMIAN KMS \\
+        \hline
+        Version & 4.19.1 \\
+        \hline
+        Testing Category & Certificates \\
+        \hline
+        Test Case ID & CKMS\_TC\_03\_06 \\
+        \hline
+        Test Case Name & revoke\_certificates \\
+        \hline
+        Test Case Description & Revoke certificates using different methods. \\
+        \hline
+    \end{tabularx}
+\end{table}
+
+\begin{table}[h]
+    \centering
+    \begin{tabularx}{1\textwidth}{ 
+      | >{\raggedright\arraybackslash}X   
+      | p{2.5cm}                            
+      | p{2.5cm} |}                         
+        \hline
+        \textbf{Test Scenario} & \textbf{Expected (Pass/Fail)} & \textbf{Obtained (Pass/Fail)} \\  
+        \hline
+
+test\_revoke\_certificate\_by\_id & Pass & Pass \\
+\hline
+
+test\_revoke\_certificate\_by\_tag & Pass & Pass \\
+\hline
+
+test\_revoke\_certificate\_without\_reason & Fail & Fail \\
+\hline
+
+test\_revoke\_certificate\_without\_id\_or\_tag & Fail & Fail \\
+\hline
+
+    \end{tabularx}
+\end{table}
+
+    \begin{table}[h]
+        \centering
+        \begin{tabularx}{1\textwidth}{ 
+          | >{\raggedright\arraybackslash}X 
+          | >{\raggedright\arraybackslash}X | }
+            \hline
+            Timestamp & 2024-10-27 21:09:48 \\
+            \hline
+            Tester & Unknown \\
+            \hline
+            \rowcolor{green!30} % Use specified color for the row
+            Status (Pass/Fail) & Pass \\
+            \hline
+        \end{tabularx}
+        \caption{Test Case Overall Results Summary}
+        \label{tab:test_case_info}
+    \end{table}
+
+    \newpage
+    
+\subsection{Test Case: destroy\_certificates}
+
+\begin{table}[h]
+    \centering
+    \begin{tabularx}{1\textwidth}{ 
+      | >{\raggedright\arraybackslash}X 
+      | >{\raggedright\arraybackslash}X | }
+        \hline
+        \rowcolor{grey!15}
+        \multicolumn{2}{|c|}{\textbf{Software Information}} \\  % Merged row with topic
+        \hline
+        SUT & COSMIAN KMS \\
+        \hline
+        Version & 4.19.1 \\
+        \hline
+        Testing Category & Certificates \\
+        \hline
+        Test Case ID & CKMS\_TC\_03\_07 \\
+        \hline
+        Test Case Name & destroy\_certificates \\
+        \hline
+        Test Case Description & Destroy certificates from the server. \\
+        \hline
+    \end{tabularx}
+\end{table}
+
+\begin{table}[h]
+    \centering
+    \begin{tabularx}{1\textwidth}{ 
+      | >{\raggedright\arraybackslash}X   
+      | p{2.5cm}                            
+      | p{2.5cm} |}                         
+        \hline
+        \textbf{Test Scenario} & \textbf{Expected (Pass/Fail)} & \textbf{Obtained (Pass/Fail)} \\  
+        \hline
+
+test\_destroy\_certificate\_by\_id & Pass & Pass \\
+\hline
+
+test\_destroy\_certificate\_by\_tag & Pass & Pass \\
+\hline
+
+test\_destroy\_certificate\_without\_id\_or\_tag & Fail & Fail \\
+\hline
+
+    \end{tabularx}
+\end{table}
+
+    \begin{table}[h]
+        \centering
+        \begin{tabularx}{1\textwidth}{ 
+          | >{\raggedright\arraybackslash}X 
+          | >{\raggedright\arraybackslash}X | }
+            \hline
+            Timestamp & 2024-10-27 21:09:51 \\
+            \hline
+            Tester & Unknown \\
+            \hline
+            \rowcolor{green!30} % Use specified color for the row
+            Status (Pass/Fail) & Pass \\
+            \hline
+        \end{tabularx}
+        \caption{Test Case Overall Results Summary}
+        \label{tab:test_case_info}
+    \end{table}
+
+    \newpage
+    
+\subsection{Test Case: sym\_keys\_create}
+
+\begin{table}[h]
+    \centering
+    \begin{tabularx}{1\textwidth}{ 
+      | >{\raggedright\arraybackslash}X 
+      | >{\raggedright\arraybackslash}X | }
+        \hline
+        \rowcolor{grey!15}
+        \multicolumn{2}{|c|}{\textbf{Software Information}} \\  % Merged row with topic
+        \hline
+        SUT & COSMIAN KMS \\
+        \hline
+        Version & 4.19.1 \\
+        \hline
+        Testing Category & Symmetric Keys \\
+        \hline
+        Test Case ID & CKMS\_TC\_10\_01\_01 \\
+        \hline
+        Test Case Name & sym\_keys\_create \\
+        \hline
+        Test Case Description & Create certificates using chacha20 and aes symmetric key algorithms. \\
+        \hline
+    \end{tabularx}
+\end{table}
+
+\begin{table}[h]
+    \centering
+    \begin{tabularx}{1\textwidth}{ 
+      | >{\raggedright\arraybackslash}X   
+      | p{2.5cm}                            
+      | p{2.5cm} |}                         
+        \hline
+        \textbf{Test Scenario} & \textbf{Expected (Pass/Fail)} & \textbf{Obtained (Pass/Fail)} \\  
+        \hline
+
+test\_generate\_sym\_keys\_with\_chacha20 & Pass & Pass \\
+\hline
+
+test\_generate\_sym\_keys\_with\_aes & Pass & Pass \\
+\hline
+
+    \end{tabularx}
+\end{table}
+
+    \begin{table}[h]
+        \centering
+        \begin{tabularx}{1\textwidth}{ 
+          | >{\raggedright\arraybackslash}X 
+          | >{\raggedright\arraybackslash}X | }
+            \hline
+            Timestamp & 2024-10-27 21:09:53 \\
+            \hline
+            Tester & Unknown \\
+            \hline
+            \rowcolor{green!30} % Use specified color for the row
+            Status (Pass/Fail) & Pass \\
+            \hline
+        \end{tabularx}
+        \caption{Test Case Overall Results Summary}
+        \label{tab:test_case_info}
+    \end{table}
+
+    \newpage
+    
+\subsection{Test Case: sym\_keys\_export}
+
+\begin{table}[h]
+    \centering
+    \begin{tabularx}{1\textwidth}{ 
+      | >{\raggedright\arraybackslash}X 
+      | >{\raggedright\arraybackslash}X | }
+        \hline
+        \rowcolor{grey!15}
+        \multicolumn{2}{|c|}{\textbf{Software Information}} \\  % Merged row with topic
+        \hline
+        SUT & COSMIAN KMS \\
+        \hline
+        Version & 4.19.1 \\
+        \hline
+        Testing Category & Symmetric Keys \\
+        \hline
+        Test Case ID & CKMS\_TC\_10\_01\_03 \\
+        \hline
+        Test Case Name & sym\_keys\_export \\
+        \hline
+        Test Case Description & Export symmetric keys into different supported file formats. \\
+        \hline
+    \end{tabularx}
+\end{table}
+
+\begin{table}[h]
+    \centering
+    \begin{tabularx}{1\textwidth}{ 
+      | >{\raggedright\arraybackslash}X   
+      | p{2.5cm}                            
+      | p{2.5cm} |}                         
+        \hline
+        \textbf{Test Scenario} & \textbf{Expected (Pass/Fail)} & \textbf{Obtained (Pass/Fail)} \\  
+        \hline
+
+test\_export\_key\_with\_key\_id & Pass & Pass \\
+\hline
+
+test\_export\_key\_with\_invalid\_key\_id & Fail & Fail \\
+\hline
+
+test\_export\_key\_with\_tags & Pass & Pass \\
+\hline
+
+test\_export\_key\_with\_invalid\_tags & Fail & Fail \\
+\hline
+
+test\_export\_key\_in\_json\_ttlv & Pass & Pass \\
+\hline
+
+test\_export\_key\_in\_raw\_keyfile & Pass & Pass \\
+\hline
+
+test\_export\_key\_in\_raw\_binfile & Pass & Pass \\
+\hline
+
+    \end{tabularx}
+\end{table}
+
+    \begin{table}[h]
+        \centering
+        \begin{tabularx}{1\textwidth}{ 
+          | >{\raggedright\arraybackslash}X 
+          | >{\raggedright\arraybackslash}X | }
+            \hline
+            Timestamp & 2024-10-27 21:09:56 \\
+            \hline
+            Tester & Unknown \\
+            \hline
+            \rowcolor{green!30} % Use specified color for the row
+            Status (Pass/Fail) & Pass \\
+            \hline
+        \end{tabularx}
+        \caption{Test Case Overall Results Summary}
+        \label{tab:test_case_info}
+    \end{table}
+
+    \newpage
+    
+\subsection{Test Case: sym\_keys\_import}
+
+\begin{table}[h]
+    \centering
+    \begin{tabularx}{1\textwidth}{ 
+      | >{\raggedright\arraybackslash}X 
+      | >{\raggedright\arraybackslash}X | }
+        \hline
+        \rowcolor{grey!15}
+        \multicolumn{2}{|c|}{\textbf{Software Information}} \\  % Merged row with topic
+        \hline
+        SUT & COSMIAN KMS \\
+        \hline
+        Version & 4.19.1 \\
+        \hline
+        Testing Category & Symmetric Keys \\
+        \hline
+        Test Case ID & CKMS\_TC\_10\_01\_04 \\
+        \hline
+        Test Case Name & sym\_keys\_import \\
+        \hline
+        Test Case Description & Import symmetric keys from different supported file formats. \\
+        \hline
+    \end{tabularx}
+\end{table}
+
+\begin{table}[h]
+    \centering
+    \begin{tabularx}{1\textwidth}{ 
+      | >{\raggedright\arraybackslash}X   
+      | p{2.5cm}                            
+      | p{2.5cm} |}                         
+        \hline
+        \textbf{Test Scenario} & \textbf{Expected (Pass/Fail)} & \textbf{Obtained (Pass/Fail)} \\  
+        \hline
+
+test\_import\_symkey\_from\_key\_file & Pass & Pass \\
+\hline
+
+test\_import\_symkey\_from\_bin\_file & Pass & Pass \\
+\hline
+
+test\_import\_symkey\_from\_json\_file & Pass & Pass \\
+\hline
+
+    \end{tabularx}
+\end{table}
+
+    \begin{table}[h]
+        \centering
+        \begin{tabularx}{1\textwidth}{ 
+          | >{\raggedright\arraybackslash}X 
+          | >{\raggedright\arraybackslash}X | }
+            \hline
+            Timestamp & 2024-10-27 21:09:57 \\
+            \hline
+            Tester & Unknown \\
+            \hline
+            \rowcolor{green!30} % Use specified color for the row
+            Status (Pass/Fail) & Pass \\
+            \hline
+        \end{tabularx}
+        \caption{Test Case Overall Results Summary}
+        \label{tab:test_case_info}
+    \end{table}
+
+    \newpage
+    
+\subsection{Test Case: sym\_keys\_revoke}
+
+\begin{table}[h]
+    \centering
+    \begin{tabularx}{1\textwidth}{ 
+      | >{\raggedright\arraybackslash}X 
+      | >{\raggedright\arraybackslash}X | }
+        \hline
+        \rowcolor{grey!15}
+        \multicolumn{2}{|c|}{\textbf{Software Information}} \\  % Merged row with topic
+        \hline
+        SUT & COSMIAN KMS \\
+        \hline
+        Version & 4.19.1 \\
+        \hline
+        Testing Category & Symmetric Keys \\
+        \hline
+        Test Case ID & CKMS\_TC\_10\_01\_05 \\
+        \hline
+        Test Case Name & sym\_keys\_revoke \\
+        \hline
+        Test Case Description & Revoke symmetric keys using different methods. \\
+        \hline
+    \end{tabularx}
+\end{table}
+
+\begin{table}[h]
+    \centering
+    \begin{tabularx}{1\textwidth}{ 
+      | >{\raggedright\arraybackslash}X   
+      | p{2.5cm}                            
+      | p{2.5cm} |}                         
+        \hline
+        \textbf{Test Scenario} & \textbf{Expected (Pass/Fail)} & \textbf{Obtained (Pass/Fail)} \\  
+        \hline
+
+test\_revoke\_symkey\_by\_id & Pass & Pass \\
+\hline
+
+test\_revoke\_symkey\_by\_tag & Pass & Pass \\
+\hline
+
+test\_revoke\_symkey\_without\_reason & Fail & Fail \\
+\hline
+
+test\_revoke\_symkey\_without\_id\_or\_tag & Fail & Fail \\
+\hline
+
+    \end{tabularx}
+\end{table}
+
+    \begin{table}[h]
+        \centering
+        \begin{tabularx}{1\textwidth}{ 
+          | >{\raggedright\arraybackslash}X 
+          | >{\raggedright\arraybackslash}X | }
+            \hline
+            Timestamp & 2024-10-27 21:09:58 \\
+            \hline
+            Tester & Unknown \\
+            \hline
+            \rowcolor{green!30} % Use specified color for the row
+            Status (Pass/Fail) & Pass \\
+            \hline
+        \end{tabularx}
+        \caption{Test Case Overall Results Summary}
+        \label{tab:test_case_info}
+    \end{table}
+
+    \newpage
+    
+\subsection{Test Case: sym\_keys\_destroy}
+
+\begin{table}[h]
+    \centering
+    \begin{tabularx}{1\textwidth}{ 
+      | >{\raggedright\arraybackslash}X 
+      | >{\raggedright\arraybackslash}X | }
+        \hline
+        \rowcolor{grey!15}
+        \multicolumn{2}{|c|}{\textbf{Software Information}} \\  % Merged row with topic
+        \hline
+        SUT & COSMIAN KMS \\
+        \hline
+        Version & 4.19.1 \\
+        \hline
+        Testing Category & Symmetric Keys \\
+        \hline
+        Test Case ID & CKMS\_TC\_10\_01\_06 \\
+        \hline
+        Test Case Name & sym\_keys\_destroy \\
+        \hline
+        Test Case Description & Destroy symmetric keys from the server. \\
+        \hline
+    \end{tabularx}
+\end{table}
+
+\begin{table}[h]
+    \centering
+    \begin{tabularx}{1\textwidth}{ 
+      | >{\raggedright\arraybackslash}X   
+      | p{2.5cm}                            
+      | p{2.5cm} |}                         
+        \hline
+        \textbf{Test Scenario} & \textbf{Expected (Pass/Fail)} & \textbf{Obtained (Pass/Fail)} \\  
+        \hline
+
+test\_destroy\_key\_by\_id & Pass & Pass \\
+\hline
+
+test\_destroy\_key\_by\_tag & Pass & Pass \\
+\hline
+
+test\_destroy\_key\_without\_id\_or\_tag & Fail & Fail \\
+\hline
+
+    \end{tabularx}
+\end{table}
+
+    \begin{table}[h]
+        \centering
+        \begin{tabularx}{1\textwidth}{ 
+          | >{\raggedright\arraybackslash}X 
+          | >{\raggedright\arraybackslash}X | }
+            \hline
+            Timestamp & 2024-10-27 21:09:59 \\
+            \hline
+            Tester & Unknown \\
+            \hline
+            \rowcolor{green!30} % Use specified color for the row
+            Status (Pass/Fail) & Pass \\
+            \hline
+        \end{tabularx}
+        \caption{Test Case Overall Results Summary}
+        \label{tab:test_case_info}
+    \end{table}
+
+    \newpage
+    
+\newpage
+
+\section{Conclusion}
+
+The Cosmian KMS Test Suite was executed successfully, with results validating key functionalities and confirming expected behavior. All critical operations performed as intended.
+
+\begin{center}
+\textit{End of Report}
+\end{center}
+
+
+\end{document}

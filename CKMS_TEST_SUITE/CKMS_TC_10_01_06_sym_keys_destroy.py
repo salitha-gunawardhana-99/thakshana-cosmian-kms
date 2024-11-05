@@ -24,13 +24,42 @@ import CKMS_keys
 # Set up logging
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 
+logging.info("Setting up KMS server...")
+CKMS_general.start_kms_server()
+
+CKMS_general.clear_database()
+
+sut = CKMS_general.SUT
+version = CKMS_general.VERSION
+
+testing_category = "Symmetric Keys"
+test_case_id = "CKMS_TC_10_01_06".replace("_", "\\_")
+test_case_name = "sym_keys_destroy".replace("_", "\\_")
+test_case_description = "Destroy symmetric keys from the server."
+
+import latex_content
+
+table_1 = latex_content.generate_latex_table_1(test_case_name, sut, version, testing_category, test_case_id, test_case_description)
+
+with open('test_report_of_cosmian_kms_test_suite.tex', 'a') as f:
+            f.write(table_1)
+            
+print("")
+
 class TestCkmsSymKeysDestroy(unittest.TestCase):
+    # Class-level attributes to track overall test status
+    all_tests_passed = True
+    table_2 = latex_content.table_2_init
+    
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.test_scenario = ""
+        self.expected_result = ""
+        self.obtained_result = ""
+        self.error_row_color = "red!30"
 
     def setUp(self):
         print("")
-        
-        logging.info("Setting up KMS server and generating a symmetric key.")
-        CKMS_general.start_kms_server()
         
         # Generate an key for revoke test
         self.test_key_tags = ["test_sym_key"]
@@ -50,48 +79,136 @@ class TestCkmsSymKeysDestroy(unittest.TestCase):
         print("")
         print("=" * 120)
 
-    def test_destroy_key_by_id(self):
-        print("")
-        
-        # Remove test key after every test scenario        
-        CKMS_keys.revoke_key(revocation_reason="Testing", tags=self.test_key_tags)
-        CKMS_keys.destroy_key(tags=self.test_key_tags)
-            
-        print("")
-        print("=" * 120)
-
-    def test_destroy_certificate_by_id(self):
+    def test_01_destroy_key_by_id(self):
         logging.info("Starting test case: test_destroy_certificate_by_id")
         
         CKMS_keys.revoke_key(revocation_reason="testing",tags=self.test_key_tags)
         
         status = CKMS_keys.destroy_key(key_id=self.test_key_id)
-
-        self.assertIn("pass", status, "Failed to destroy key by ID.")
-
+        
+        try:
+            self.assertIn("pass", status, "Failed to destroy key by ID.")
+            self.obtained_result = "Pass"
+        except AssertionError as e:
+            logging.error(f"Assertion failed at test_destroy_key_by_id: {e}")
+            self.__class__.all_tests_passed = False
+            self.obtained_result = "Fail"
+            self.__class__.table_2 += f"""
+\\rowcolor{{{self.error_row_color}}}
+"""
+        except Exception as e:
+            logging.error(f"Error during test_destroy_key_by_id: {e}")
+            self.__class__.all_tests_passed = False
+            self.obtained_result = "Error"
+            self.__class__.table_2 += f"""
+\\rowcolor{{{self.error_row_color}}}
+"""        
+        self.test_scenario = "test_destroy_key_by_id".replace("_", "\\_")
+        self.expected_result = "Pass"
+        self.__class__.table_2 += f"""
+{self.test_scenario} & {self.expected_result} & {self.obtained_result} \\\\
+\\hline
+"""
         logging.info("Starting test case: test_destroy_certificate_by_id")
 
-    def test_destroy_certificate_by_tag(self):
+    def test_02_destroy_key_by_tag(self):
         logging.info("Starting test case: test_destroy_certificate_by_tag")
         
         CKMS_keys.revoke_key(revocation_reason="testing",tags=self.test_key_tags)
         
         status = CKMS_keys.destroy_key(tags=self.test_key_tags)
-
-        self.assertIn("pass", status, "Failed to destroy key by ID.")
-
+        
+        try:
+            self.assertIn("pass", status, "Failed to destroy key by ID.")
+            self.obtained_result = "Pass"
+        except AssertionError as e:
+            logging.error(f"Assertion failed at test_destroy_key_by_tag: {e}")
+            self.__class__.all_tests_passed = False
+            self.obtained_result = "Fail"
+            self.__class__.table_2 += f"""
+\\rowcolor{{{self.error_row_color}}}
+"""
+        except Exception as e:
+            logging.error(f"Error during test_destroy_key_by_tag: {e}")
+            self.__class__.all_tests_passed = False
+            self.obtained_result = "Error"
+            self.__class__.table_2 += f"""
+\\rowcolor{{{self.error_row_color}}}
+"""        
+        self.test_scenario = "test_destroy_key_by_tag".replace("_", "\\_")
+        self.expected_result = "Pass"
+        self.__class__.table_2 += f"""
+{self.test_scenario} & {self.expected_result} & {self.obtained_result} \\\\
+\\hline
+"""
         logging.info("Starting test case: test_destroy_certificate_by_tag")
 
-    def test_destroy_certificate_without_id_or_tag(self):
+    def test_03_destroy_key_without_id_or_tag(self):
         logging.info("Starting test case: test_destroy_certificate_without_id_or_tag")
         
         CKMS_keys.revoke_key(revocation_reason="testing",tags=self.test_key_tags)
         
         status = CKMS_keys.destroy_key()
-
-        self.assertIn("fail", status, "Invalid destruction occured.")
-
+        
+        try:
+            self.assertIn("fail", status, "Invalid destruction occured.")
+            self.obtained_result = "Fail"
+        except AssertionError as e:
+            logging.error(f"Assertion failed at test_destroy_key_without_id_or_tag: {e}")
+            self.__class__.all_tests_passed = False
+            self.obtained_result = "Pass"
+            self.__class__.table_2 += f"""
+\\rowcolor{{{self.error_row_color}}}
+"""
+        except Exception as e:
+            logging.error(f"Error during test_destroy_key_without_id_or_tag: {e}")
+            self.__class__.all_tests_passed = False
+            self.obtained_result = "Error"
+            self.__class__.table_2 += f"""
+\\rowcolor{{{self.error_row_color}}}
+"""        
+        self.test_scenario = "test_destroy_key_without_id_or_tag".replace("_", "\\_")
+        self.expected_result = "Fail"
+        self.__class__.table_2 += f"""
+{self.test_scenario} & {self.expected_result} & {self.obtained_result} \\\\
+\\hline
+"""
         logging.info("Starting test case: test_destroy_certificate_without_id_or_tag")
 
+from datetime import datetime
+date_of_execution = datetime.now().timestamp()  # This gives you the timestamp
+timestamp = datetime.fromtimestamp(date_of_execution).strftime("%Y-%m-%d %H:%M:%S")
+tester = "Unknown"
+status = "Fail"
+row_color = "red!30"
+
 if __name__ == '__main__':
-    unittest.main()
+    # Create a test suite
+    suite = unittest.defaultTestLoader.loadTestsFromTestCase(TestCkmsSymKeysDestroy)
+
+    # Run the test suite
+    runner = unittest.TextTestRunner(verbosity=2)
+    result = runner.run(suite)
+    
+    TestCkmsSymKeysDestroy.table_2 += f"""
+    \\end{{tabularx}}
+\\end{{table}}
+"""
+
+    table_2 = TestCkmsSymKeysDestroy.table_2
+    with open('test_report_of_cosmian_kms_test_suite.tex', 'a') as f:
+            f.write(table_2)
+
+    # Check the result and print a message accordingly
+    if TestCkmsSymKeysDestroy.all_tests_passed:
+        print("All tests passed!")
+        status = "Pass"
+        row_color = "green!30"        
+    else:
+        print("Some tests failed!")
+        
+    # LaTeX table for overall result of test case
+    table_3 = latex_content.generate_latex_table_3(timestamp, tester, status, row_color)
+
+    with open('test_report_of_cosmian_kms_test_suite.tex', 'a') as f:
+        f.write(table_3)

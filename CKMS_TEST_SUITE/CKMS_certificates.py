@@ -109,8 +109,8 @@ def generate_pkcs12_certificate(common_name="MyCert", private_key_filename = "pr
     # Check if the certificate already exists
     if not os.path.exists(certificate_filename):
         # Generate self-signed certificate
-        CKMS_general.run_command(f"openssl req -new -x509 -key {private_key_filename} -out {certificate_filename} "
-                    f"-days 365 -subj \"/CN={common_name}\"")
+        command = f"openssl req -new -x509 -key {private_key_filename} -out {certificate_filename} " f"-days 365 -subj \"/CN={common_name}\""
+        CKMS_general.run_command(command)
         logging.info(f"Self-signed certificate generated: {certificate_filename}")
     else:
         logging.info(f"Certificate already exists: {certificate_filename}")
@@ -285,7 +285,7 @@ def export_certificate(
         logging.info(f"Successfully exported the certificate to '{certificate_file}'.")
         with open(certificate_file, "rb") as f:
             cert_data = f.read()
-        # os.remove(key_file)
+        # os.remove(certificate_file)
         return cert_data
     
     logging.error(f"Failed to export the certificate to '{certificate_file}'.")
@@ -316,9 +316,15 @@ def import_certificate(
     result = CKMS_general.run_command(check_command)
     if result:
         logging.info(f"A certificate with tag '{tags[0]}' already exists in the KMS. Import aborted.")
+        # output = CKMS_general.run_command(f"ckms attributes get -t {tags[0]} -t _sk")
+        id_extract_command = "ckms attributes get"
+        for tag in tags:
+            id_extract_command += f" -t {tag}"
+        output = CKMS_general.run_command(id_extract_command)
+        identifier = CKMS_general.extract_unique_identifier(output)
         if os.path.exists("cert_exported.json"):
             os.remove("cert_exported.json")
-        return ["pass", None]
+        return ["pass", identifier]
         
     logging.info(f"No certificate with tag '{tags[0]}' found in the KMS. Proceeding with import.")
 
@@ -354,7 +360,7 @@ def import_certificate(
 
     # Add tags if provided
     if tags:
-        for tag in tags:
+        for tag in tags[:1]:
             command += f" --tag {tag}"
 
     # Add key usages if provided

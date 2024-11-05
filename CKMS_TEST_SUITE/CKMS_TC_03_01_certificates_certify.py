@@ -53,6 +53,33 @@ import CKMS_certificates
 # Set up logging
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 
+logging.info("Setting up KMS server and generating RSA key pair.")
+CKMS_general.start_kms_server()
+
+CKMS_general.clear_database()
+
+sut = CKMS_general.SUT
+version = CKMS_general.VERSION
+
+testing_category = "Certificates"
+test_case_id = "CKMS_TC_03_01".replace("_", "\\_")
+test_case_name = "certify_certificates".replace("_", "\\_")
+test_case_description = "Certify certificates using different certifying methods."
+
+import latex_content
+
+section_init = f"""
+\\section{{Execution and Results}}
+"""
+
+with open('test_report_of_cosmian_kms_test_suite.tex', 'a') as f:
+            f.write(section_init)
+
+table_1 = latex_content.generate_latex_table_1(test_case_name, sut, version, testing_category, test_case_id, test_case_description)
+
+with open('test_report_of_cosmian_kms_test_suite.tex', 'a') as f:
+            f.write(table_1)
+
 """
 
 Cosmian has extended the specifications and offers 4 possibilities to generate a certificate:
@@ -63,12 +90,22 @@ Cosmian has extended the specifications and offers 4 possibilities to generate a
   
 """
 
+print("")
+
 class TestCkmsCertificatesCertify(unittest.TestCase):
+    # Class-level attributes to track overall test status
+    all_tests_passed = True
+    table_2 = latex_content.table_2_init
+    
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.test_scenario = ""
+        self.expected_result = ""
+        self.obtained_result = ""
+        self.error_row_color = "red!30"
+    
     def setUp(self):
         print("")
-        
-        logging.info("Setting up KMS server and generating RSA key pair.")
-        CKMS_general.start_kms_server()
         
         # Generate an RSA key pair for testing
         self.test_rsa_key_tags = ["test_rsa_key"]
@@ -89,7 +126,7 @@ class TestCkmsCertificatesCertify(unittest.TestCase):
         print("")
         
         # Remove test rsa key after every test scenario        
-        CKMS_keys.revoke_key(revocation_reason="Testing", tags=self.test_rsa_key_tags)
+        CKMS_keys.revoke_key(revocation_reason="testing", tags=self.test_rsa_key_tags)
         CKMS_keys.destroy_key(tags=self.test_rsa_key_tags)
         
         # Remove created test certificate after every test scenario
@@ -97,13 +134,17 @@ class TestCkmsCertificatesCertify(unittest.TestCase):
         CKMS_certificates.destroy_certificate(tags=self.test_cert_tags)
         
         # Remove issuer after every test scenario        
-        CKMS_certificates.revoke_certificate(revocation_reason="testing",tags=self.test_issuer_tags)
-        CKMS_certificates.destroy_certificate(tags=self.test_issuer_tags)
+        # CKMS_certificates.revoke_certificate(revocation_reason="testing",tags=self.test_issuer_tags)
+        # CKMS_certificates.destroy_certificate(tags=self.test_issuer_tags)
+        
+        # Remove test rsa key after every test scenario        
+        # CKMS_keys.revoke_key(revocation_reason="Testing", tags=self.test_issuer_tags)
+        # CKMS_keys.destroy_key(tags=self.test_issuer_tags)
         
         print("")
         print("=" * 120)
 
-    def test_self_sign_public_key(self):
+    def test_01_self_sign_public_key(self):
         logging.info("Starting test case: test_self_sign_public_key")
 
         # Perform a self-signing operation
@@ -114,11 +155,34 @@ class TestCkmsCertificatesCertify(unittest.TestCase):
         
         # Check that the certificate has been created and extracted correctly
         cert_id = CKMS_certificates.export_certificate(tags=self.test_cert_tags + ["_cert"])
-        self.assertIsNotNone(cert_id, "Failed to certify the public key.")
-
+        
+        try:
+            # Check if the certification success by exporting the certificate
+            self.assertIsNotNone(cert_id, "Failed to certify the public key.")
+            self.obtained_result = "Pass"
+        except AssertionError as e:
+            logging.error(f"Assertion failed at test_self_sign_public_key: {e}")
+            self.__class__.all_tests_passed = False
+            self.obtained_result = "Fail"
+            self.__class__.table_2 += f"""
+\\rowcolor{{{self.error_row_color}}}
+"""
+        except Exception as e:
+            logging.error(f"Error during test_self_sign_public_key: {e}")
+            self.__class__.all_tests_passed = False
+            self.obtained_result = "Error"
+            self.__class__.table_2 += f"""
+\\rowcolor{{{self.error_row_color}}}
+"""        
+        self.test_scenario = "test_self_sign_public_key".replace("_", "\\_")
+        self.expected_result = "Pass"
+        self.__class__.table_2 += f"""
+{self.test_scenario} & {self.expected_result} & {self.obtained_result} \\\\
+\\hline
+"""
         logging.info("Finishing test case: test_self_sign_public_key")
         
-    def test_self_sign_invalid_public_key(self):
+    def test_02_self_sign_invalid_public_key(self):
         logging.info("Starting test case: test_self_sign_invalid_public_key")
         
         # Remove test rsa key before certification        
@@ -133,42 +197,82 @@ class TestCkmsCertificatesCertify(unittest.TestCase):
         
         # Check that the certificate has not been created and extracted
         cert_id = CKMS_certificates.export_certificate(tags=self.test_cert_tags + ["_cert"])
-        self.assertIsNone(cert_id, "Unexpected certification occured.")
-
+        
+        try:
+            # Check if the certification success by exporting the certificate
+            self.assertIsNone(cert_id, "Unexpected certification occured.")
+            self.obtained_result = "Fail"
+        except AssertionError as e:
+            logging.error(f"Assertion failed at test_self_sign_invalid_public_key: {e}")
+            self.__class__.all_tests_passed = False
+            self.obtained_result = "Pass"
+            self.__class__.table_2 += f"""
+\\rowcolor{{{self.error_row_color}}}
+"""
+        except Exception as e:
+            logging.error(f"Error during test_self_sign_invalid_public_key: {e}")
+            self.__class__.all_tests_passed = False
+            self.obtained_result = "Error"
+            self.__class__.table_2 += f"""
+\\rowcolor{{{self.error_row_color}}}
+"""        
+        self.test_scenario = "test_self_sign_invalid_public_key".replace("_", "\\_")
+        self.expected_result = "Fail"
+        self.__class__.table_2 += f"""
+{self.test_scenario} & {self.expected_result} & {self.obtained_result} \\\\
+\\hline
+"""
         logging.info("Finishing test case: test_self_sign_invalid_public_key")
 
-    def test_import_issuer(self):
+    def test_03_import_issuer(self):
         logging.info("Starting test case: test_import_issuer")
         
         # Generate and import an issuer certificate and private key
         CKMS_certificates.generate_pkcs12_certificate(
-            common_name="TestIssuer",
-            private_key_filename="test_issuer_private_key.pem",
-            certificate_filename="test_issuer_certificate.pem",
-            pkcs12_filename="test_my_ca.p12",
-            pkcs12_password="testpassword"
-        )
-        
+                common_name="TestIssuer",
+                private_key_filename="test_issuer_private_key.pem",
+                certificate_filename="test_issuer_certificate.pem",
+                pkcs12_filename="test_my_ca.p12",
+                pkcs12_password="testpassword"
+            )
+            
         self.issuer_private_key_id = CKMS_certificates.import_certificate(
-            certificate_file="test_my_ca.p12",
-            input_format = "pkcs12", 
-            pkcs12_password="testpassword", 
-            tags=self.test_issuer_tags
+                certificate_file="test_my_ca.p12",
+                input_format = "pkcs12", 
+                pkcs12_password="testpassword", 
+                tags=self.test_issuer_tags + ["_sk"]
         )[1]
+            
+        self.issuer_certificate_id = CKMS_general.extract_cert_id(self.test_issuer_tags[0])   
+        try:
+            # Check if the certification success by exporting the certificate
+            self.assertIsNotNone(self.issuer_private_key_id, "Failed to import the issuer private key.")
+            self.obtained_result = "Pass"
+        except AssertionError as e:
+            logging.error(f"Assertion failed at test_import_issuer: {e}")
+            self.__class__.all_tests_passed = False
+            self.obtained_result = "Fail"
+            self.__class__.table_2 += f"""
+\\rowcolor{{{self.error_row_color}}}
+"""
+        except Exception as e:
+            logging.error(f"Error during test_import_issuer: {e}")
+            self.__class__.all_tests_passed = False
+            self.obtained_result = "Error"
+            self.__class__.table_2 += f"""
+\\rowcolor{{{self.error_row_color}}}
+"""        
+        self.test_scenario = "test_import_issuer".replace("_", "\\_")
+        self.expected_result = "Pass"
         
-        self.issuer_certificate_id = CKMS_general.extract_cert_id(self.test_issuer_tags[0])
-        
-        # Assert the issuer private key ID is imported successfully
-        self.assertIsNotNone(self.issuer_private_key_id, "Failed to import the issuer private key.")
-
         logging.info("Finishing test case: test_import_issuer")
 
-    def test_certify_with_issuer_private_key(self):
+    def test_04_certify_with_issuer_private_key(self):
         logging.info("Starting test case: test_certify_with_issuer_private_key")
 
         # Import the issuer first if not already done
         if not self.issuer_private_key_id:
-            self.test_import_issuer()
+            self.test_03_import_issuer()
 
         # Certify using the issuer private key
         CKMS_certificates.certify_certificate(
@@ -179,16 +283,38 @@ class TestCkmsCertificatesCertify(unittest.TestCase):
         
         # Check if certification succeeded
         cert_id = CKMS_certificates.export_certificate(tags=self.test_cert_tags + ["_cert"])
-        self.assertIsNotNone(cert_id, "Failed to certify the public key with issuer private key.")
-
+        try:
+            # Check if the certification success by exporting the certificate
+            self.assertIsNotNone(cert_id, "Failed to certify the public key with issuer private key.")
+            self.obtained_result = "Pass"
+        except AssertionError as e:
+            logging.error(f"Assertion failed at test_certify_with_issuer_private_key: {e}")
+            self.__class__.all_tests_passed = False
+            self.obtained_result = "Fail"
+            self.__class__.table_2 += f"""
+\\rowcolor{{{self.error_row_color}}}
+"""
+        except Exception as e:
+            logging.error(f"Error during test_certify_with_issuer_private_key: {e}")
+            self.__class__.all_tests_passed = False
+            self.obtained_result = "Error"
+            self.__class__.table_2 += f"""
+\\rowcolor{{{self.error_row_color}}}
+"""        
+        self.test_scenario = "test_certify_with_issuer_private_key".replace("_", "\\_")
+        self.expected_result = "Pass"
+        self.__class__.table_2 += f"""
+{self.test_scenario} & {self.expected_result} & {self.obtained_result} \\\\
+\\hline
+"""
         logging.info("Finishing test case: test_certify_with_issuer_private_key")
 
-    def test_certify_with_issuer_certificate(self):
+    def test_05_certify_with_issuer_certificate(self):
         logging.info("Starting test case: test_certify_with_issuer_certificate")
 
         # Import the issuer first if not already done
         if not self.issuer_private_key_id:
-            self.test_import_issuer()
+            self.test_03_import_issuer()
 
         # Certify using the issuer certificate
         CKMS_certificates.certify_certificate(
@@ -199,17 +325,39 @@ class TestCkmsCertificatesCertify(unittest.TestCase):
         
         # Check if certification unsucceeded
         cert_id = CKMS_certificates.export_certificate(tags=self.test_cert_tags + ["_cert"])
-        self.assertIsNone(cert_id, "Unexpected certification occured.")
-
+        try:
+            # Check if the certification success by exporting the certificate
+            self.assertIsNotNone(cert_id, "Failed to certify the public key with issuer certificate.")
+            self.obtained_result = "Pass"
+        except AssertionError as e:
+            logging.error(f"Assertion failed at test_certify_with_issuer_certificate: {e}")
+            self.__class__.all_tests_passed = False
+            self.obtained_result = "Fail"
+            self.__class__.table_2 += f"""
+\\rowcolor{{{self.error_row_color}}}
+"""
+        except Exception as e:
+            logging.error(f"Error during test_certify_with_issuer_certificate: {e}")
+            self.__class__.all_tests_passed = False
+            self.obtained_result = "Error"
+            self.__class__.table_2 += f"""
+\\rowcolor{{{self.error_row_color}}}
+"""        
+        self.test_scenario = "test_certify_with_issuer_certificate".replace("_", "\\_")
+        self.expected_result = "Pass"
+        self.__class__.table_2 += f"""
+{self.test_scenario} & {self.expected_result} & {self.obtained_result} \\\\
+\\hline
+"""
         logging.info("Finishing test case: test_certify_with_issuer_certificate")
 
-    def test_certify_with_csr(self):
+    def test_06_certify_with_csr(self):
         # A self-signed certificate cannot be created from a CSR without specifying the private key id
         logging.info("Starting test case: test_certify_with_csr")
 
         # Import the issuer first if not already done
         if not self.issuer_private_key_id:
-            self.test_import_issuer()
+            self.test_03_import_issuer()
 
         # Certify using the issuer private key
         CKMS_certificates.certify_certificate(
@@ -220,16 +368,39 @@ class TestCkmsCertificatesCertify(unittest.TestCase):
         
         # Check if certification succeeded
         cert_id = CKMS_certificates.export_certificate(tags=self.test_cert_tags + ["_cert"])
-        self.assertIsNotNone(cert_id, "Failed to certify the csr.")
+        try:
+            # Check if the certification success by exporting the certificate
+            self.assertIsNotNone(cert_id, "Failed to certify the csr.")
+            self.obtained_result = "Pass"
+        except AssertionError as e:
+            logging.error(f"Assertion failed at test_certify_with_csr: {e}")
+            self.__class__.all_tests_passed = False
+            self.obtained_result = "Fail"
+            self.__class__.table_2 += f"""
+\\rowcolor{{{self.error_row_color}}}
+"""
+        except Exception as e:
+            logging.error(f"Error during test_certify_with_csr: {e}")
+            self.__class__.all_tests_passed = False
+            self.obtained_result = "Error"
+            self.__class__.table_2 += f"""
+\\rowcolor{{{self.error_row_color}}}
+"""        
+        self.test_scenario = "test_certify_with_csr".replace("_", "\\_")
+        self.expected_result = "Pass"
+        self.__class__.table_2 += f"""
+{self.test_scenario} & {self.expected_result} & {self.obtained_result} \\\\
+\\hline
+"""
 
         logging.info("Finishing test case: test_certify_with_csr")
 
-    def test_certify_with_invalid_csr(self):
+    def test_07_certify_with_invalid_csr(self):
         logging.info("Starting test case: test_certify_with_invalid_csr")
 
         # Import the issuer first if not already done
         if not self.issuer_private_key_id:
-            self.test_import_issuer()
+            self.test_03_import_issuer()
 
         # Certify using the issuer private key
         CKMS_certificates.certify_certificate(
@@ -240,11 +411,33 @@ class TestCkmsCertificatesCertify(unittest.TestCase):
         
         # Check if certification unsucceeded
         cert_id = CKMS_certificates.export_certificate(tags=self.test_cert_tags + ["_cert"])
-        self.assertIsNone(cert_id, "Unexpected certification occured.")
-
+        try:
+            # Check if the certification success by exporting the certificate
+            self.assertIsNone(cert_id, "Unexpected certification occured.")
+            self.obtained_result = "Fail"
+        except AssertionError as e:
+            logging.error(f"Assertion failed at test_certify_with_invalid_csr: {e}")
+            self.__class__.all_tests_passed = False
+            self.obtained_result = "Pass"
+            self.__class__.table_2 += f"""
+\\rowcolor{{{self.error_row_color}}}
+"""
+        except Exception as e:
+            logging.error(f"Error during test_certify_with_invalid_csr: {e}")
+            self.__class__.all_tests_passed = False
+            self.obtained_result = "Error"
+            self.__class__.table_2 += f"""
+\\rowcolor{{{self.error_row_color}}}
+"""        
+        self.test_scenario = "test_certify_with_invalid_csr".replace("_", "\\_")
+        self.expected_result = "Fail"
+        self.__class__.table_2 += f"""
+{self.test_scenario} & {self.expected_result} & {self.obtained_result} \\\\
+\\hline
+"""
         logging.info("Finishing test case: test_certify_with_invalid_csr")
 
-    def test_certify_with_gen_keypair_self_sign(self):
+    def test_08_certify_with_gen_keypair_self_sign(self):
         logging.info("Starting test case: test_certify_with_gen_keypair_self_sign")
 
         # Certify using the issuer private key
@@ -254,17 +447,39 @@ class TestCkmsCertificatesCertify(unittest.TestCase):
         )
         
         # Check if certification succeeded
-        cert_id = CKMS_certificates.export_certificate(tags=self.test_cert_tags + ["_cert"])
-        self.assertIsNotNone(cert_id, "Failed to certify the generated key.")
-        
+        cert_id = CKMS_certificates.export_certificate(tags=self.test_cert_tags + ["_cert"])        
+        try:
+            # Check if the certification success by exporting the certificate
+            self.assertIsNotNone(cert_id, "Failed to certify the generated key.")
+            self.obtained_result = "Pass"
+        except AssertionError as e:
+            logging.error(f"Assertion failed at test_certify_with_gen_keypair_self_sign: {e}")
+            self.__class__.all_tests_passed = False
+            self.obtained_result = "Fail"
+            self.__class__.table_2 += f"""
+\\rowcolor{{{self.error_row_color}}}
+"""
+        except Exception as e:
+            logging.error(f"Error during test_certify_with_gen_keypair_self_sign: {e}")
+            self.__class__.all_tests_passed = False
+            self.obtained_result = "Error"
+            self.__class__.table_2 += f"""
+\\rowcolor{{{self.error_row_color}}}
+"""        
+        self.test_scenario = "test_certify_with_gen_keypair_self_sign".replace("_", "\\_")
+        self.expected_result = "Pass"
+        self.__class__.table_2 += f"""
+{self.test_scenario} & {self.expected_result} & {self.obtained_result} \\\\
+\\hline
+"""        
         logging.info("Finishing test case: test_certify_with_gen_keypair_self_sign")
         
-    def test_certify_with_gen_keypair_from_issuer_private_key(self):
+    def test_09_certify_with_gen_keypair_from_issuer_private_key(self):
         logging.info("Starting test case: test_certify_with_gen_keypair_from_issuer_private_key")
         
         # Import the issuer first if not already done
         if not self.issuer_private_key_id:
-            self.test_import_issuer()
+            self.test_03_import_issuer()
 
         # Certify using the issuer private key
         CKMS_certificates.certify_certificate(
@@ -275,13 +490,70 @@ class TestCkmsCertificatesCertify(unittest.TestCase):
         )
         
         # Check if certification succeeded
-        cert_id = CKMS_certificates.export_certificate(tags=self.test_cert_tags + ["_cert"])
-        self.assertIsNotNone(cert_id, "Failed to certify the generated key.")
-        
+        cert_id = CKMS_certificates.export_certificate(tags=self.test_cert_tags + ["_cert"])        
+        try:
+            # Check if the certification success by exporting the certificate
+            self.assertIsNotNone(cert_id, "Failed to certify the generated key.")
+            self.obtained_result = "Pass"
+        except AssertionError as e:
+            logging.error(f"Assertion failed at test_certify_with_gen_keypair_from_issuer_private_key: {e}")
+            self.__class__.all_tests_passed = False
+            self.obtained_result = "Fail"
+            self.__class__.table_2 += f"""
+\\rowcolor{{{self.error_row_color}}}
+"""
+        except Exception as e:
+            logging.error(f"Error during test_certify_with_gen_keypair_from_issuer_private_key: {e}")
+            self.__class__.all_tests_passed = False
+            self.obtained_result = "Error"
+            self.__class__.table_2 += f"""
+\\rowcolor{{{self.error_row_color}}}
+"""        
+        self.test_scenario = "test_certify_with_gen_keypair_from_issuer_private_key".replace("_", "\\_")
+        self.expected_result = "Pass"
+        self.__class__.table_2 += f"""
+{self.test_scenario} & {self.expected_result} & {self.obtained_result} \\\\
+\\hline
+"""        
         logging.info("Finishing test case: test_certify_with_gen_keypair_from_issuer_private_key")
 
     # def test_recertify_certificate(self):
     #     None
 
+from datetime import datetime
+date_of_execution = datetime.now().timestamp()  # This gives you the timestamp
+timestamp = datetime.fromtimestamp(date_of_execution).strftime("%Y-%m-%d %H:%M:%S")
+tester = "Unknown"
+status = "Fail"
+row_color = "red!30"
+
 if __name__ == '__main__':
-    unittest.main()
+    # Create a test suite
+    suite = unittest.defaultTestLoader.loadTestsFromTestCase(TestCkmsCertificatesCertify)
+
+    # Run the test suite
+    runner = unittest.TextTestRunner(verbosity=2)
+    result = runner.run(suite)
+    
+    TestCkmsCertificatesCertify.table_2 += f"""
+    \\end{{tabularx}}
+\\end{{table}}
+"""
+
+    table_2 = TestCkmsCertificatesCertify.table_2
+    with open('test_report_of_cosmian_kms_test_suite.tex', 'a') as f:
+            f.write(table_2)
+
+    # Check the result and print a message accordingly
+    if TestCkmsCertificatesCertify.all_tests_passed:
+        print("All tests passed!")
+        status = "Pass"
+        row_color = "green!30"        
+    else:
+        print("Some tests failed!")
+        
+    # LaTeX table for overall result of test case
+    table_3 = latex_content.generate_latex_table_3(timestamp, tester, status, row_color)
+
+    with open('test_report_of_cosmian_kms_test_suite.tex', 'a') as f:
+        f.write(table_3)

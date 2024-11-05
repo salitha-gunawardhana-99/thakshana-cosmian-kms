@@ -9,8 +9,11 @@ import os
 # Constants
 KMS_PORT = 9998
 KMS_CONTAINER_NAME = "kms"
-KMS_IMAGE = "ghcr.io/cosmian/kms:4.17.0"
+# KMS_IMAGE = "ghcr.io/cosmian/kms:4.17.0"
+KMS_IMAGE = "ghcr.io/cosmian/kms:4.19.1"
 
+SUT = "COSMIAN KMS"
+VERSION = "4.19.1"
 
 # Print hex mode
 def print_hex(label: str, data: bytes):
@@ -54,6 +57,44 @@ def start_kms_server():
             return
         time.sleep(1)
     logging.error("KMS server failed to start.")
+    
+
+def clear_database():
+    # Define the container name
+    container_name = "kms"
+
+    try:
+        # Step 1: Enter the Docker container and check if sqlite3 is installed
+        exec_command = f"docker exec {container_name} /bin/bash -c"
+        
+        # Step 2: Check if sqlite3 is installed
+        check_sqlite = f"{exec_command} 'sqlite3 --version'"
+        result = subprocess.run(check_sqlite, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+
+        if result.returncode != 0:
+            # logging.info("sqlite3 not found. Installing sqlite3 inside the container.")
+            
+            # Step 3: Install sqlite3 if not available
+            install_sqlite = f"{exec_command} 'apt-get update && apt-get install -y sqlite3'"
+            subprocess.run(install_sqlite, shell=True, check=True)
+        else:
+            # logging.info("sqlite3 is already installed.")
+            pass
+        
+        # Step 4: Execute SQLite queries in one step (non-interactive)
+        # logging.info("Navigating to cosmian-kms/sqlite-data directory and executing queries.")
+        
+        # Combine the SQL commands to execute them in one subprocess call
+        sqlite_commands = "DELETE FROM objects; DELETE FROM tags;"
+        
+        execute_sql = f"{exec_command} 'cd cosmian-kms/sqlite-data && sqlite3 kms.db \"{sqlite_commands}\"'"
+        subprocess.run(execute_sql, shell=True, check=True)
+
+        logging.info("KMS cleaned up successfully.")
+
+    except subprocess.CalledProcessError as e:
+        logging.error(f"An error occurred: {e}")
+        raise
 
 
 # Extract unique identifier from the output
@@ -65,7 +106,7 @@ def extract_unique_identifier(output: str) -> Optional[str]:
 
 # Extract certificate ID based on a tag
 def extract_cert_id(tag: str) -> Optional[str]:
-    output = run_command(f"ckms get-attributes -t {tag} -t _cert")
+    output = run_command(f"ckms attributes get -t {tag} -t _cert")
     return extract_unique_identifier(output)
 
 
@@ -95,3 +136,14 @@ def append_to_csv(filename: str, data: list):
         print(f"Appended new data to {filename}: {data}")
     else:
         print(f"Created new CSV file {filename} and added the first row: {data}")
+        
+        
+def stop_kms_container():
+    # Command to stop the KMS container using ckms
+    stop_command = "ckms stop kms"
+        
+    # Execute the command
+    run_command(stop_command)
+
+    logging.info("KMS Docker container stopped successfully.")
+
