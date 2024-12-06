@@ -1,0 +1,16 @@
+{
+    "tag": "GenerateEnrolData",
+    "type": "Structure",
+    "value": [
+        {
+            "tag": "SerialNumber",
+            "type": "Enumeration",
+            "value": "SN_CallistoModem"
+        },
+        {
+            "tag": "PartNumber",
+            "type": "Enumeration",
+            "value": "PN_CallistoModem"
+        }
+    ]
+}
